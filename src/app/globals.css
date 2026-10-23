@@ -1,0 +1,281 @@
+@import 'tailwindcss';
+
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+/* hover wie in Tailwind 3 auch auf Touch-Geräten (Tippen zeigt z. B. Tooltips) */
+@custom-variant hover (&:hover);
+
+/* Mikroanimationen (nur mit motion-safe: verwenden, damit «Bewegung reduzieren» greift) */
+@theme {
+  --animate-wachsen-y: wachsen-y 600ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-wachsen-x: wachsen-x 700ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-puls-3: puls 1.2s cubic-bezier(0, 0, 0.2, 1) 3;
+  @keyframes puls {
+    0% { transform: scale(1); opacity: 0.75; }
+    75%, 100% { transform: scale(2.4); opacity: 0; }
+  }
+  @keyframes wachsen-y {
+    from { transform: scaleY(0); }
+  }
+  /* Höhe statt scale: was darüber steht (z. B. der Betrag) wandert mit dem Balken hoch */
+  --animate-wachsen-hoehe: wachsen-hoehe 600ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  @keyframes wachsen-hoehe {
+    from { height: 0; min-height: 0; }
+  }
+  @keyframes wachsen-x {
+    from { transform: scaleX(0); }
+  }
+  --animate-nav-laden: nav-laden 8s cubic-bezier(0.1, 0.7, 0.3, 1) both;
+  @keyframes nav-laden {
+    0% { width: 0; }
+    15% { width: 40%; }
+    100% { width: 85%; }
+  }
+  --animate-donut-zeichnen: donut-zeichnen 900ms cubic-bezier(0.4, 0, 0.2, 1) both;
+  @keyframes donut-zeichnen {
+    from { stroke-dashoffset: var(--umfang); }
+    to { stroke-dashoffset: 0; }
+  }
+}
+
+/* Nur App-Code nach Klassen durchsuchen, nicht Doku, Migrationen oder Tests */
+@source not "../../docs";
+@source not "../../supabase";
+@source not "../../tests";
+
+/* inline: Utilities lesen die Variablen am Element, damit .admin-dark seine eigene Palette bekommt */
+@theme inline {
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+}
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+  /* Tailwind 4 zeigt bei Knöpfen den normalen Mauszeiger; wie bisher die Hand */
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+@layer utilities {
+  :root {
+    --foreground-rgb: 0, 0, 0;
+    --background-start-rgb: 255, 255, 255;
+    --background-end-rgb: 255, 255, 255;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --foreground-rgb: 255, 255, 255;
+      --background-start-rgb: 0, 0, 0;
+      --background-end-rgb: 0, 0, 0;
+    }
+  }
+
+  body {
+    color: rgb(var(--foreground-rgb));
+    background: rgb(var(--background-start-rgb));
+  }
+}
+
+@layer utilities {
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer base {
+  /* Light-Palette = Farben der Website (slate/blue, siehe HomeClient.tsx) */
+  :root {
+    --background: 210 40% 98%; /* slate-50 */
+    --foreground: 217.2 32.6% 17.5%; /* slate-800 */
+    --card: 0 0% 100%; /* white */
+    --card-foreground: 217.2 32.6% 17.5%; /* slate-800 */
+    --popover: 0 0% 100%; /* white */
+    --popover-foreground: 217.2 32.6% 17.5%; /* slate-800 */
+    --primary: 221.2 83.2% 53.3%; /* blue-600 */
+    --primary-foreground: 0 0% 100%; /* white */
+    --secondary: 210 40% 96.1%; /* slate-100 */
+    --secondary-foreground: 217.2 32.6% 17.5%; /* slate-800 */
+    --muted: 210 40% 96.1%; /* slate-100 */
+    --muted-foreground: 215.3 19.3% 34.5%; /* slate-600 */
+    --accent: 210 40% 96.1%; /* slate-100 */
+    --accent-foreground: 217.2 32.6% 17.5%; /* slate-800 */
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 214.3 31.8% 91.4%; /* slate-200 */
+    --input: 214.3 31.8% 91.4%; /* slate-200 */
+    --ring: 221.2 83.2% 53.3%; /* blue-600 */
+    --radius: 0.5rem;
+  }
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 48%;
+  }
+  /* Light-Isolation: erlaubt einem Teilbaum, trotz .dark-Vorfahr hell zu sein.
+     Identisch zu :root — die Light-Farben der Website. */
+  .light {
+    --background: 210 40% 98%; /* slate-50 */
+    --foreground: 217.2 32.6% 17.5%; /* slate-800 */
+    --card: 0 0% 100%; /* white */
+    --card-foreground: 217.2 32.6% 17.5%; /* slate-800 */
+    --popover: 0 0% 100%; /* white */
+    --popover-foreground: 217.2 32.6% 17.5%; /* slate-800 */
+    --primary: 221.2 83.2% 53.3%; /* blue-600 */
+    --primary-foreground: 0 0% 100%; /* white */
+    --secondary: 210 40% 96.1%; /* slate-100 */
+    --secondary-foreground: 217.2 32.6% 17.5%; /* slate-800 */
+    --muted: 210 40% 96.1%; /* slate-100 */
+    --muted-foreground: 215.3 19.3% 34.5%; /* slate-600 */
+    --accent: 210 40% 96.1%; /* slate-100 */
+    --accent-foreground: 217.2 32.6% 17.5%; /* slate-800 */
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 214.3 31.8% 91.4%; /* slate-200 */
+    --input: 214.3 31.8% 91.4%; /* slate-200 */
+    --ring: 221.2 83.2% 53.3%; /* blue-600 */
+  }
+  /* Admin: dunkle Farbwelt der Website (HomeClient.tsx im Dark-Mode:
+     bg slate-900, Karten slate-800, Text slate-200, Akzente blue-300/400). */
+  .admin-dark {
+    color-scheme: dark; /* native Datums-Picker und Scrollbars dunkel */
+    --background: 222.2 47.4% 11.2%; /* slate-900 */
+    --foreground: 214.3 31.8% 91.4%; /* slate-200 */
+    --card: 217.2 32.6% 17.5%; /* slate-800 */
+    --card-foreground: 214.3 31.8% 91.4%; /* slate-200 */
+    --popover: 217.2 32.6% 17.5%; /* slate-800 */
+    --popover-foreground: 214.3 31.8% 91.4%; /* slate-200 */
+    --primary: 213.1 93.9% 67.8%; /* blue-400 */
+    --primary-foreground: 222.2 47.4% 11.2%; /* slate-900 */
+    --secondary: 215.3 25% 26.7%; /* slate-700 */
+    --secondary-foreground: 214.3 31.8% 91.4%; /* slate-200 */
+    --muted: 215.3 25% 26.7%; /* slate-700 */
+    --muted-foreground: 215 20.2% 65.1%; /* slate-400 */
+    --accent: 215.3 25% 26.7%; /* slate-700 */
+    --accent-foreground: 211.7 96.4% 78.4%; /* blue-300 */
+    --destructive: 0 93.5% 81.8%; /* red-300: 4.5:1 auch auf Karten und Hover-Zeilen */
+    --destructive-foreground: 222.2 47.4% 11.2%; /* slate-900 */
+    --border: 215.3 25% 26.7%; /* slate-700 */
+    --input: 215.4 16.3% 46.9%; /* slate-500: Rahmen ≥ 3:1 (WCAG 1.4.11) */
+    --ring: 213.1 93.9% 67.8%; /* blue-400 */
+  }
+  /* Tailwind färbt `border` ohne Farbe sonst gray-200 (auf Dunkel fast weiss).
+     In @layer base, damit Utilities wie border-green-500 weiterhin gewinnen. */
+  .admin-dark *,
+  .admin-dark ::before,
+  .admin-dark ::after {
+    border-color: hsl(var(--border));
+  }
+}
+
+/* Ausserhalb der Layer: Diese Regeln müssen Utilities übersteuern (Tailwind 4 nutzt
+   native Cascade Layers – dort gewinnt jede Utility gegen @layer base, egal wie spezifisch). */
+/* Fixierter Header darf fokussierte Elemente nicht verdecken (WCAG 2.4.11). */
+:root:has(.admin-dark) {
+  scroll-padding-top: 5rem;
+}
+/* Fixierter Seitenkopf (StickyHeader): kompakt, sobald er oben festsitzt */
+@media (min-width: 1024px) {
+  .sticky-kopf[data-stuck='true'] h1 { font-size: 1.375rem; line-height: 1.75rem; }
+  .sticky-kopf[data-stuck='true'] h1 + p { display: none; }
+  /* Fokus nicht verdeckt (WCAG 2.4.11): beim Fokussieren Platz für festen Seiten- und Tabellenkopf */
+  :root:has(.sticky-kopf) { scroll-padding-top: calc(var(--sticky-kopf-h, 0px) + 3.5rem); }
+  /* Tabellenköpfe der Seite kleben unter dem festen Seitenkopf (nicht in Dialogen: die liegen ausserhalb) */
+  .sticky-kopf ~ * .tabelle-scroll { overflow: visible; }
+  .sticky-kopf ~ * .tabelle-scroll > table > thead th {
+    position: sticky;
+    top: var(--sticky-kopf-h, 0px);
+    z-index: 20;
+    background: hsl(var(--card));
+    box-shadow: inset 0 -1px 0 hsl(var(--border));
+  }
+}
+/* Beim Überscrollen (Gummiband in Safari/Trackpad) scheint html/body durch – im Admin
+   dunkel statt Website-Hintergrund (hell je nach System- bzw. Website-Modus). */
+:root:has(.admin-dark),
+:root:has(.admin-dark) body {
+  background: hsl(222.2 47.4% 11.2%); /* slate-900 = --background im Admin */
+}
+
+/* Radix Select legt in Formularen ein verstecktes <select> hinter den Auslöser. space-y-* gäbe dem
+   Auslöser sonst Abstand nach unten (Tailwind 4: margin-bottom auf alle ausser dem letzten Kind). */
+[class*='space-y-'] > :has(+ select[aria-hidden='true']:last-child) {
+  margin-block-end: 0;
+}
+
+/* Weiches Auf- und Zuklappen von <details> (Browser ohne ::details-content klappen wie bisher sofort) */
+@media (prefers-reduced-motion: no-preference) {
+  :root {
+    interpolate-size: allow-keywords;
+  }
+  details::details-content {
+    block-size: 0;
+    overflow-y: clip;
+    transition: block-size 250ms cubic-bezier(0.2, 0.8, 0.2, 1), content-visibility 250ms allow-discrete;
+  }
+  details[open]::details-content {
+    block-size: auto;
+  }
+}
