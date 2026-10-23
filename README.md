@@ -2,7 +2,7 @@
 
 Rechnungen, Stunden und Ausgaben für Selbständige in der Schweiz – selbst gehostet, deine Daten bleiben bei dir.
 
-<!-- ![Dashboard von Bureau mit Beispieldaten](docs/images/dashboard.png) -->
+![Dashboard von Bureau mit Beispieldaten: Todos, Verdienst, Rücklage, Zahlungsverlauf und offene Rechnungen](docs/images/dashboard.png)
 
 ## Funktionen
 
@@ -12,6 +12,20 @@ Rechnungen, Stunden und Ausgaben für Selbständige in der Schweiz – selbst ge
 - **Kunden:** Kundenportal mit Rechnungen und Stundenrapporten, Website-Überwachung mit Alarm
 - **Automatisch:** Wochenübersicht per Mail jeden Montag
 - **Sicher:** Pflicht-Zwei-Faktor (Authenticator oder Passkey), Row Level Security, automatische Abmeldung, Datensicherung als ZIP
+
+## Einblicke
+
+Alle Bilder zeigen erfundene Beispieldaten.
+
+| Rechnungen | Zeiterfassung |
+|---|---|
+| ![Rechnungsliste mit Status Entwurf, Versendet und Bezahlt](docs/images/rechnungen.png) | ![Zeiterfassung mit Einträgen nach Kunde und Projekt](docs/images/zeiterfassung.png) |
+| **Kunde** | **Kundenportal** |
+| ![Kunden-Detailseite mit Verdienst, Stundenbudget und Projekten](docs/images/kunde.png) | ![Kundenportal mit offenen und bezahlten Rechnungen und Stundenbudget](docs/images/kundenportal.png) |
+
+**Rechnung als PDF mit QR-Zahlteil**
+
+![Rechnung als PDF mit Positionen und Swiss-QR-Zahlteil](docs/images/rechnung-pdf.png)
 
 ## Für wen
 
