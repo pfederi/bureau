@@ -1,0 +1,30 @@
+name: Idee vorschlagen
+description: Eine neue Funktion oder Verbesserung anregen.
+title: "Idee: "
+labels: ["idee"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Welches Problem soll gelöst werden?
+      description: Beschreibe die Situation aus deinem Alltag, nicht nur die Lösung.
+      placeholder: z. B. «Ich verrechne viele kleine Aufträge und tippe jedes Mal dieselben Positionen ab.»
+    validations:
+      required: true
+  - type: textarea
+    id: vorschlag
+    attributes:
+      label: Wie könnte es aussehen?
+    validations:
+      required: true
+  - type: textarea
+    id: alternativen
+    attributes:
+      label: Wie löst du es heute?
+      description: Workarounds oder andere Werkzeuge, die du dafür nutzt.
+  - type: checkboxes
+    id: schweiz
+    attributes:
+      label: Rahmen
+      options:
+        - label: Die Idee passt zu Bureau als Werkzeug für eine Person in der Schweiz (CHF, QR-Rechnung, deutsche Oberfläche).

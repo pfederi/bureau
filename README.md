@@ -48,6 +48,11 @@ npm run check   # Typen, Tests, npm audit, Login-Schutz, Migrationen, Geheimniss
 
 Konventionen für Mitarbeit (auch mit KI-Assistenten) stehen in [CLAUDE.md](CLAUDE.md).
 
+## Fehler, Ideen und Sicherheit
+
+- **Fehler melden** oder **Idee vorschlagen** über die Formulare unter [Issues](https://github.com/pfederi/bureau/issues/new/choose).
+- **Sicherheitslücken** bitte vertraulich melden, nicht als Issue – siehe [SECURITY.md](SECURITY.md).
+
 ## Lizenz
 
 [Functional Source License 1.1, MIT Future License](LICENSE). Du darfst Bureau frei nutzen – auch für dein eigenes Geschäft –, anpassen und weitergeben. Nicht erlaubt ist, Bureau zu verkaufen oder als Dienst für andere anzubieten. Zwei Jahre nach Veröffentlichung wird jede Version zu MIT.

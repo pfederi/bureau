@@ -1,0 +1,74 @@
+name: Fehler melden
+description: Etwas funktioniert nicht wie erwartet.
+title: "Fehler: "
+labels: ["fehler"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Danke, dass du dir die Zeit nimmst. Bitte keine persönlichen Daten, Kundendaten oder Zugangsschlüssel ins Formular kopieren – Screenshots vorher schwärzen.
+        Sicherheitslücken bitte **nicht** hier melden, sondern vertraulich (siehe «Sicherheitslücke melden»).
+  - type: textarea
+    id: was
+    attributes:
+      label: Was ist passiert?
+      description: Kurz beschreiben, was du gesehen hast, inklusive Fehlermeldung.
+    validations:
+      required: true
+  - type: textarea
+    id: erwartet
+    attributes:
+      label: Was hast du erwartet?
+    validations:
+      required: true
+  - type: textarea
+    id: schritte
+    attributes:
+      label: Schritte zum Nachstellen
+      placeholder: |
+        1. Rechnungen öffnen
+        2. «Neue Rechnung» wählen
+        3. …
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Bureau-Version
+      description: Steht unten in der Seitenleiste («Version …»).
+      placeholder: z. B. 1.9.1
+    validations:
+      required: true
+  - type: dropdown
+    id: hosting
+    attributes:
+      label: Wo läuft Bureau?
+      options:
+        - Vercel
+        - Docker (z. B. Coolify, Fly.io, Render)
+        - Node-Server
+        - Lokal (npm run dev)
+        - Anderes
+    validations:
+      required: true
+  - type: dropdown
+    id: supabase
+    attributes:
+      label: Supabase
+      options:
+        - supabase.com
+        - Selbst gehostet
+        - Lokal (Supabase-CLI)
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser und Gerät
+      placeholder: z. B. Safari auf iPhone, Chrome auf Windows
+  - type: textarea
+    id: protokoll
+    attributes:
+      label: Protokoll oder Konsole (optional)
+      description: Fehlerausgaben aus dem Server-Log oder der Browser-Konsole. Vorher auf Schlüssel und persönliche Daten prüfen.
+      render: shell

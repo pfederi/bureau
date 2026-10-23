@@ -7,7 +7,7 @@ Diese Anleitung führt von einem leeren Supabase-Projekt bis zur laufenden Insta
 - Node 22
 - Ein Supabase-Projekt (supabase.com oder selbst gehostet)
 - Optional: Resend (Mailversand) und Groq (Belegerkennung)
-- Für den Betrieb: Hosting mit Docker (zum Beispiel Coolify, Fly.io, Render) oder ein Node-Server
+- Für den Betrieb: Vercel, Hosting mit Docker (zum Beispiel Coolify, Fly.io, Render) oder ein Node-Server
 
 ## 2. Datenbank
 
@@ -76,9 +76,34 @@ Kopiere `.env.example` nach `.env.local` und fülle die Werte aus.
 | `GROQ_API_KEY` | optional | automatische Belegerkennung |
 | `GROQ_MODEL` | optional | Modell für die Belegerkennung |
 
-`NEXT_PUBLIC_*`-Variablen müssen beim Build gesetzt sein, nicht erst beim Start. Bei Docker gibst du sie als Build-Args mit.
+`NEXT_PUBLIC_*`-Variablen müssen beim Build gesetzt sein, nicht erst beim Start. Bei Docker gibst du sie als Build-Args mit, bei Vercel genügt es, sie in den Projekteinstellungen einzutragen.
 
 ## 5. Deployment
+
+### Vercel
+
+1. Das Repo (bzw. deinen Fork) in Vercel als neues Projekt importieren. Vercel erkennt Next.js selbst, Build- und Startbefehl bleiben auf dem Standard.
+2. Unter Settings → Environment Variables alle Variablen aus Abschnitt 4 eintragen, `APP_URL` mit der Adresse des Vercel-Projekts bzw. deiner eigenen Domain.
+3. Deployen. Danach in Supabase unter Authentication → URL Configuration die Adresse als «Site URL» eintragen.
+
+Für die Cron-Jobs (Abschnitt 6) eine Datei `vercel.json` im Repo anlegen. Ist `CRON_SECRET` gesetzt, schickt Vercel den nötigen Header `Authorization: Bearer <CRON_SECRET>` bei jedem geplanten Aufruf selbst mit. Die Zeiten gelten in UTC:
+
+```json
+{
+  "crons": [
+    { "path": "/api/cron/wochenmail", "schedule": "0 6 * * 1" },
+    { "path": "/api/cron/ueberwachung", "schedule": "0 7 * * *" }
+  ]
+}
+```
+
+Hinweise:
+
+- Im Gratis-Plan (Hobby) laufen Cron-Jobs höchstens einmal pro Tag; ein häufigerer Takt lässt das Deployment scheitern. Für die Website-Überwachung alle 15 Minuten (`*/15 * * * *`) brauchst du den Pro-Plan oder einen externen Cron-Dienst (Abschnitt 6).
+- Datensicherung und Steuerpaket können bei vielen Belegen länger dauern. Reicht die Laufzeit der Funktionen in deinem Plan nicht, erscheint ein Zeitlimit-Fehler; dann die Laufzeit in den Projekteinstellungen erhöhen.
+- Vercel ist für Bureau noch nicht im Alltag erprobt. Prüfe nach dem ersten Deployment einmal ein Rechnungs-PDF, die Datensicherung und die Wochenmail.
+
+### Docker
 
 Im Repo liegt ein `Dockerfile`. Die App lauscht auf Port 3000. Beim Bauen brauchst du die Build-Args `NEXT_PUBLIC_SUPABASE_URL` und `NEXT_PUBLIC_SUPABASE_ANON_KEY`; die übrigen Variablen setzt du als Umgebungsvariablen des laufenden Containers.
 
@@ -90,7 +115,9 @@ docker build \
 docker run -p 3000:3000 --env-file .env.local bureau
 ```
 
-Ohne Docker: `npm ci`, `npm run build`, `npm run start`.
+### Node-Server
+
+`npm ci`, `npm run build`, `npm run start`.
 
 ## 6. Cron-Jobs
 
@@ -107,7 +134,7 @@ Beispiel:
 curl -fsS -H "Authorization: Bearer $CRON_SECRET" https://admin.example.ch/api/cron/wochenmail
 ```
 
-Eingetragen wird das im Planer deines Hostings (zum Beispiel «Scheduled Tasks») oder in einem Cron-Dienst.
+Eingetragen wird das im Planer deines Hostings (zum Beispiel «Scheduled Tasks» oder bei Vercel in `vercel.json`, siehe Abschnitt 5) oder in einem Cron-Dienst.
 
 Ohne `RESEND_API_KEY` laufen beide Aufgaben trotzdem, verschicken aber keine Mail: Die Überwachung prüft die Websites und speichert den Zustand (sichtbar im Admin), die Antwort enthält den Hinweis «Mail deaktiviert (RESEND_API_KEY fehlt)».
 
