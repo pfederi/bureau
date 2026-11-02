@@ -4,7 +4,7 @@ import { parseTimeEntryForm } from '@/lib/db/timeEntries'
 describe('parseTimeEntryForm', () => {
   it('parses hours and rate as numbers', () => {
     const fd = new FormData()
-    fd.set('customer_id', '11111111-1111-1111-1111-111111111111')
+    fd.set('customer_id', '11111111-1111-4111-8111-111111111111')
     fd.set('datum', '2026-07-24')
     fd.set('beschreibung', 'Konzept')
     fd.set('stunden', '2.5')

@@ -1,5 +1,7 @@
 import { listInvoices, listHostingBilled } from '@/lib/db/invoices'
 import { listCustomers } from '@/lib/db/customers'
+import { listGuthabenSaldi } from '@/lib/db/guthaben'
+import { angerechnet, zuBezahlen } from '@/lib/invoices/guthaben'
 import { formatChf } from '@/lib/invoices/stats'
 import InvoiceActions from '../InvoiceActions'
 import InvoiceFilterBar from './InvoiceFilterBar'
@@ -32,10 +34,11 @@ export default async function RechnungenPage(
   const jahr = searchParams.jahr || String(new Date().getFullYear())
   // Unbekannte Werte aus der URL ignorieren statt die Abfrage scheitern zu lassen.
   const status = (Object.keys(label) as InvoiceStatus[]).find(s => s === searchParams.status)
-  const [invoices, customers, hostingBilled] = await Promise.all([
+  const [invoices, customers, hostingBilled, guthaben] = await Promise.all([
     listInvoices({ customerId: searchParams.kunde, jahr: jahr === 'alle' ? undefined : jahr, status }),
     listCustomers(),
     listHostingBilled(),
+    listGuthabenSaldi(),
   ])
   return (
     <div className="space-y-6">
@@ -81,7 +84,12 @@ export default async function RechnungenPage(
                   </TableCell>
                   <TableCell className="hidden whitespace-nowrap md:table-cell">{inv.customer?.firma_oder_name}</TableCell>
                   <TableCell className="hidden tabular-nums md:table-cell">{formatDatum(inv.rechnungsdatum)}</TableCell>
-                  <TableCell className="hidden whitespace-nowrap text-right tabular-nums sm:table-cell">{formatChf(Number(inv.betrag), { tabelle: true })}</TableCell>
+                  <TableCell className="hidden whitespace-nowrap text-right tabular-nums sm:table-cell">
+                    {formatChf(Number(inv.betrag), { tabelle: true })}
+                    {angerechnet(inv) > 0 && inv.status !== 'storniert' && (
+                      <span className="block text-xs text-muted-foreground">zu bezahlen {formatChf(zuBezahlen(inv), { tabelle: true })}</span>
+                    )}
+                  </TableCell>
                   <TableCell className="hidden sm:table-cell">
                     <Badge variant={badgeVariant[inv.status]} className={badgeExtra[inv.status]}>
                       <span className="mr-1.5 inline-block h-1.5 w-1.5 rounded-full bg-current" />
@@ -94,7 +102,7 @@ export default async function RechnungenPage(
                       <Badge variant="outline" className="ml-1.5 text-muted-foreground" title="Wird mit Material verrechnet">Konto</Badge>
                     )}
                   </TableCell>
-                  <TableCell className="text-right"><InvoiceActions id={inv.id} rechnungsnummer={inv.rechnungsnummer} status={inv.status} customerId={inv.customer_id} verrechnung={inv.verrechnung_material} erinnertAm={inv.erinnert_am} /></TableCell>
+                  <TableCell className="text-right"><InvoiceActions id={inv.id} rechnungsnummer={inv.rechnungsnummer} status={inv.status} customerId={inv.customer_id} verrechnung={inv.verrechnung_material} erinnertAm={inv.erinnert_am} email={inv.customer?.email ?? null} betrag={Number(inv.betrag)} guthabenAngerechnet={angerechnet(inv)} guthabenVerfuegbar={guthaben[inv.customer_id] ?? 0} /></TableCell>
                 </TableRow>
               ))}
               {invoices.length === 0 && (

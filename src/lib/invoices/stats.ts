@@ -1,4 +1,5 @@
 import type { Invoice, TimeEntry } from '@/lib/types'
+import { zuBezahlen } from './guthaben'
 
 export type DashboardStats = {
   kundenAnzahl: number
@@ -40,7 +41,7 @@ export function computeDashboardStats(
     kundenAnzahl,
     gesamtverdienst: sum(bezahlt),
     verdienstJahr: sum(bezahlt.filter(i => i.rechnungsdatum.startsWith(String(jahr)))),
-    offenBetrag: round2(offen.reduce((s, i) => s + Number(i.betrag) - (gedeckt.get(i.id) ?? 0), 0)),
+    offenBetrag: round2(offen.reduce((s, i) => s + zuBezahlen(i) - (gedeckt.get(i.id) ?? 0), 0)),
     offenAnzahl: offen.length,
     rechnungenAnzahl: invoices.filter(i => i.status === 'versendet' || i.status === 'bezahlt').length,
   }
@@ -170,7 +171,7 @@ export function openInvoiceRows(
         id: i.id,
         rechnungsnummer: i.rechnungsnummer,
         kunde: i.customer?.firma_oder_name ?? 'Unbekannt',
-        rest: round2(Number(i.betrag) - (gedeckt.get(i.id) ?? 0)),
+        rest: round2(zuBezahlen(i) - (gedeckt.get(i.id) ?? 0)),
         tage,
         ueberfaellig: tage > ZAHLUNGSFRIST_TAGE,
       }

@@ -12,10 +12,11 @@ import {
 import type { QuoteStatus } from '@/lib/types'
 import { setQuoteStatusAction, deleteQuoteAction, convertQuoteAction } from './actions'
 import { quoteStatusLabel } from '@/lib/quotes'
+import SendenBestaetigen from '../SendenBestaetigen'
 
 
-export default function QuoteActions({ id, offertnummer, status, invoiceId }: {
-  id: string; offertnummer: string; status: QuoteStatus; invoiceId: string | null
+export default function QuoteActions({ id, offertnummer, status, invoiceId, email }: {
+  id: string; offertnummer: string; status: QuoteStatus; invoiceId: string | null; email: string | null
 }) {
   const router = useNavRouter()
   const [open, setOpen] = useState(false)
@@ -81,9 +82,15 @@ export default function QuoteActions({ id, offertnummer, status, invoiceId }: {
             <Button asChild variant="outline">
               <a href={pdfUrl}><Download className="h-4 w-4 mr-2" />PDF herunterladen</a>
             </Button>
-            <Button variant="outline" disabled={busy} onClick={send}>
+            <SendenBestaetigen
+              disabled={busy}
+              titel={`Offerte ${offertnummer} ${status === 'entwurf' ? '' : 'erneut '}senden?`}
+              text="Die Offerte geht als PDF"
+              empfaenger={email}
+              onSenden={send}
+            >
               <Send className="h-4 w-4 mr-2" />{status === 'entwurf' ? 'Senden' : 'Erneut senden'}
-            </Button>
+            </SendenBestaetigen>
             {invoiceId ? (
               <Button asChild variant="outline">
                 <a href={`/admin/rechnungen?jahr=alle`}><FileCheck2 className="h-4 w-4 mr-2" />Rechnung wurde erstellt</a>

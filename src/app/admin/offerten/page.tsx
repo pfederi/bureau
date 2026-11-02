@@ -101,7 +101,7 @@ export default async function OffertenPage(
                       {q.invoice_id && <Badge variant="outline" className="ml-1.5 text-muted-foreground">Verrechnet</Badge>}
                     </TableCell>
                     <TableCell className="text-right">
-                      <QuoteActions id={q.id} offertnummer={q.offertnummer} status={q.status} invoiceId={q.invoice_id} />
+                      <QuoteActions id={q.id} offertnummer={q.offertnummer} status={q.status} invoiceId={q.invoice_id} email={q.customer?.email ?? null} />
                     </TableCell>
                   </TableRow>
                 )

@@ -7,6 +7,7 @@ import { portalAnbieter } from '@/lib/portal/path'
 import { edition } from '@/edition'
 import { computeAccount, computeCustomerOwed } from '@/lib/invoices/account'
 import { budgetUsage } from '@/lib/invoices/budget'
+import { hoursOverview } from '@/lib/timeEntries/hoursOverview'
 import { formatBetrag, formatChf } from '@/lib/invoices/stats'
 import { formatDatum } from '@/lib/utils'
 import { Card, CardContent } from '@/components/ui/card'
@@ -15,6 +16,11 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@
 import { BudgetBar, ChfValue } from '@/app/admin/DashboardWidgets'
 import { PortalMaterialSection } from '@/modules/material'
 import BodyClass from '@/app/admin/BodyClass'
+import HoursCard from '@/app/admin/HoursCard'
+import StickyHeader from '@/app/admin/StickyHeader'
+import PortalSitesCard from './PortalSitesCard'
+import GuthabenCard from '@/app/admin/GuthabenCard'
+import { angerechnet, guthabenSaldo, guthabenVerlauf, zuBezahlen } from '@/lib/invoices/guthaben'
 
 const sora = Sora({ subsets: ['latin'], weight: ['300', '400', '500', '600'] })
 
@@ -36,7 +42,7 @@ export default async function KundenSeite(props: { params: Promise<{ token: stri
   const params = await props.params
   const data = await loadPortal(params.token)
   if (!data) notFound()
-  const { customer, invoices, credits, timeEntries, settings } = data
+  const { customer, invoices, credits, timeEntries, settings, sites, guthaben } = data
   const anbieter = portalAnbieter(edition.portalName, settings.absender_name)
 
   const offeneUndBezahlte = invoices.filter(i => !i.verrechnung_material && i.status !== 'storniert')
@@ -45,16 +51,22 @@ export default async function KundenSeite(props: { params: Promise<{ token: stri
   const owed = computeCustomerOwed(account.saldo, offeneUndBezahlte)
   const budget = budgetUsage(customer, timeEntries, new Date())
   const pdf = (id: string) => `/kunde/${params.token}/rechnung/${id}`
+  // Entwürfe sind hier nicht geladen: Einträge darauf gelten für den Kunden als offen
+  const stunden = hoursOverview(timeEntries, invoices)
+  const guthabenFrei = guthabenSaldo(guthaben, invoices)
 
   return (
     <div lang="de" className={`admin-dark ${sora.className} min-h-screen bg-background text-foreground`}>
       <BodyClass className={`admin-dark ${sora.className}`} />
-      <div className="mx-auto max-w-3xl space-y-6 px-4 py-8 sm:py-12">
-        <header>
-          <div className="text-sm text-muted-foreground">{anbieter ? `${anbieter} · ` : ''}Kundenkonto</div>
-          <h1 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">{customer.firma_oder_name}</h1>
-          <p className="text-sm text-muted-foreground">Stand {formatDatum(new Date().toISOString().slice(0, 10))}</p>
-        </header>
+      <div className="mx-auto max-w-5xl space-y-6 px-4 py-8 sm:py-12">
+        {/* Wie im Admin: bleibt ab Desktop-Breite oben stehen; Ränder passend zum schmaleren Seitenrand */}
+        <StickyHeader className="lg:-mx-4 lg:px-4">
+          <header>
+            <div className="text-sm text-muted-foreground">{anbieter ? `${anbieter} · ` : ''}Kundenkonto</div>
+            <h1 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">{customer.firma_oder_name}</h1>
+            <p className="text-sm text-muted-foreground">Stand {formatDatum(new Date().toISOString().slice(0, 10))}</p>
+          </header>
+        </StickyHeader>
 
         <Card>
           <CardContent className="pt-4 sm:pt-6">
@@ -70,14 +82,19 @@ export default async function KundenSeite(props: { params: Promise<{ token: stri
               {owed.guthaben > 0 && (
                 <div className="flex justify-between gap-2"><span>Guthaben Material</span><span>{formatChf(owed.guthaben)}</span></div>
               )}
+              {guthabenFrei > 0 && (
+                <div className="flex justify-between gap-2"><span>Guthaben, wird angerechnet</span><span>{formatChf(guthabenFrei)}</span></div>
+              )}
             </div>
           </CardContent>
         </Card>
 
+        <PortalSitesCard sites={sites} />
+
         {budget && (
           <Card>
             <CardContent className="pt-4 sm:pt-6">
-              <h2 className="mb-3 text-sm font-medium">Stundenbudget {budget.label}</h2>
+              <h2 className="karte-titel -mt-3 py-3 text-sm font-medium">Stundenbudget {budget.label}</h2>
               <BudgetBar usage={budget} />
             </CardContent>
           </Card>
@@ -85,7 +102,7 @@ export default async function KundenSeite(props: { params: Promise<{ token: stri
 
         <Card>
           <CardContent className="pt-4 sm:pt-6">
-            <h2 className="mb-4 text-sm font-medium">{materialAktiv ? 'Rechnungen mit Zahlung' : 'Rechnungen'}</h2>
+            <h2 className="karte-titel -mt-3 mb-1 py-3 text-sm font-medium">{materialAktiv ? 'Rechnungen mit Zahlung' : 'Rechnungen'}</h2>
             <Table>
               <TableHeader>
                 <TableRow>
@@ -113,7 +130,14 @@ export default async function KundenSeite(props: { params: Promise<{ token: stri
                         </div>
                       </TableCell>
                       <TableCell className="hidden sm:table-cell">{status}</TableCell>
-                      <TableCell className="text-right tabular-nums align-top sm:align-middle">{formatBetrag(Number(i.betrag), { tabelle: true })}</TableCell>
+                      <TableCell className="text-right tabular-nums align-top sm:align-middle">
+                        {formatBetrag(Number(i.betrag), { tabelle: true })}
+                        {angerechnet(i) > 0 && (
+                          <span className="block text-xs text-muted-foreground">
+                            − {formatBetrag(angerechnet(i), { tabelle: true })} Guthaben<br />zu bezahlen {formatBetrag(zuBezahlen(i), { tabelle: true })}
+                          </span>
+                        )}
+                      </TableCell>
                     </TableRow>
                   )
                 })}
@@ -124,6 +148,17 @@ export default async function KundenSeite(props: { params: Promise<{ token: stri
             </Table>
           </CardContent>
         </Card>
+
+        <GuthabenCard verlauf={guthabenVerlauf(guthaben, invoices)} saldo={guthabenFrei} />
+
+        <HoursCard
+          {...stunden}
+          rechnungLink={r => (
+            <a href={pdf(r.id)} target="_blank" rel="noreferrer" className="rounded-sm text-blue-300 underline-offset-4 hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring wrap-anywhere">
+              {r.rechnungsnummer}<span className="sr-only"> (PDF, öffnet in neuem Fenster)</span>
+            </a>
+          )}
+        />
 
         <PortalMaterialSection invoices={invoices} credits={credits} pdfHref={pdf} />
 

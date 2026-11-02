@@ -3,6 +3,8 @@
  * Reine Logik (Zustandswechsel, Todos); das Prüfen selbst steht in check.ts.
  */
 
+import { formatZeitpunkt } from '@/lib/utils'
+
 export type MonitoredSite = {
   id: string
   customer_id: string
@@ -18,6 +20,9 @@ export type MonitoredSite = {
   ssl_ablauf: string | null
   domain_ablauf: string | null
 }
+
+/** Was die Kundenseite von einer Website sieht (ohne Fehlermeldung, HTTP-Status, Antwortzeit). */
+export type PortalSite = Pick<MonitoredSite, 'id' | 'url' | 'erreichbar' | 'fehlversuche' | 'down_seit' | 'geprueft_am' | 'ssl_ablauf' | 'domain_ablauf'>
 
 export type CheckResult = {
   erreichbar: boolean
@@ -93,6 +98,22 @@ export function registrableDomain(host: string): string {
   return host.split('.').slice(-2).join('.')
 }
 
+export type SiteStatus = 'ungeprueft' | 'erreichbar' | 'aussetzer' | 'down'
+
+/**
+ * Anzeige-Status einer Website. Down erst ab der Alarm-Schwelle; einzelne Aussetzer
+ * nur im Admin (`aussetzer: false` auf der Kundenseite zeigt sie als erreichbar).
+ */
+export function siteStatus(
+  site: Pick<MonitoredSite, 'erreichbar' | 'fehlversuche'>,
+  { aussetzer = true }: { aussetzer?: boolean } = {},
+): SiteStatus {
+  if (site.erreichbar === null) return 'ungeprueft'
+  if (site.fehlversuche >= DOWN_AB_FEHLVERSUCHEN) return 'down'
+  if (site.fehlversuche > 0 && aussetzer) return 'aussetzer'
+  return 'erreichbar'
+}
+
 export type SiteEvent = 'down' | 'wieder-da'
 
 /** Neuer Zustand nach einer Prüfung und ob sich etwas Meldenswertes geändert hat. */
@@ -143,7 +164,7 @@ export function siteProblems(sites: (MonitoredSite & { kunde: string })[], now: 
       out.push({
         key: `website-${s.id}`, customerId: s.customer_id, dringend: true, tage: 1000 + seit,
         titel: `${host} nicht erreichbar · ${s.kunde}`,
-        detail: [s.down_seit ? `seit ${fmtDatum(s.down_seit)} ${new Date(s.down_seit).toLocaleTimeString('de-CH', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Zurich' })}` : null, s.fehler].filter(Boolean).join(' · '),
+        detail: [s.down_seit ? `seit ${formatZeitpunkt(s.down_seit)}` : null, s.fehler].filter(Boolean).join(' · '),
       })
     }
     if (s.ssl_ablauf) {

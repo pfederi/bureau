@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { useNavRouter } from '@/app/admin/NavProgress'
 import { toast } from 'sonner'
-import { Download, Send, MoreHorizontal, Pencil, Eye, Trash2, Wallet, BellRing, Ban } from 'lucide-react'
+import { Download, Send, MoreHorizontal, Pencil, Eye, Trash2, Wallet, BellRing, Ban, PiggyBank, Undo2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription,
@@ -16,8 +16,12 @@ import {
 } from '@/components/ui/select'
 import { setStatusAction, deleteInvoiceAction, setVerrechnungAction, stornoInvoiceAction } from './rechnungen/statusActions'
 import { formatDatum } from '@/lib/utils'
+import { formatChf } from '@/lib/invoices/stats'
+import { anrechnungFuer, zuBezahlen } from '@/lib/invoices/guthaben'
+import { applyGuthabenAction, removeGuthabenAction } from './rechnungen/guthabenActions'
 import { edition } from '@/edition'
 import { InvoicePreviewDialog } from './InvoicePreview'
+import SendenBestaetigen from './SendenBestaetigen'
 import type { InvoiceStatus } from '@/lib/types'
 
 const statusLabel: Record<InvoiceStatus, string> = {
@@ -26,8 +30,15 @@ const statusLabel: Record<InvoiceStatus, string> = {
 const statusOptions: InvoiceStatus[] = ['entwurf', 'versendet', 'bezahlt']
 
 export default function InvoiceActions({
-  id, rechnungsnummer, status, customerId, verrechnung, erinnertAm,
-}: { id: string; rechnungsnummer: string; status: InvoiceStatus; customerId: string; verrechnung: boolean; erinnertAm: string | null }) {
+  id, rechnungsnummer, status, customerId, verrechnung, erinnertAm, email, betrag, guthabenAngerechnet = 0, guthabenVerfuegbar = 0,
+}: {
+  id: string; rechnungsnummer: string; status: InvoiceStatus; customerId: string; verrechnung: boolean; erinnertAm: string | null; email: string | null
+  betrag: number
+  /** An dieser Rechnung angerechnetes Guthaben */
+  guthabenAngerechnet?: number
+  /** Noch freies Guthaben des Kunden */
+  guthabenVerfuegbar?: number
+}) {
   const router = useNavRouter()
   const [open, setOpen] = useState(false)
   const [preview, setPreview] = useState(false)
@@ -109,6 +120,36 @@ export default function InvoiceActions({
     router.refresh()
   }
 
+  // Neu angerechnet wird alles Freie plus das, was schon an dieser Rechnung hängt (höchstens der Betrag)
+  const neueAnrechnung = anrechnungFuer(guthabenVerfuegbar + guthabenAngerechnet, betrag)
+  const offen = status === 'entwurf' || status === 'versendet'
+
+  async function guthabenAnrechnen() {
+    setBusy(true)
+    const r = await applyGuthabenAction(id)
+    setBusy(false)
+    if (!r.ok) {
+      toast.error(r.error ?? 'Guthaben konnte nicht angerechnet werden.')
+      return
+    }
+    toast.success(`${formatChf(r.betrag ?? 0)} Guthaben angerechnet`)
+    setOpen(false)
+    router.refresh()
+  }
+
+  async function guthabenEntfernen() {
+    setBusy(true)
+    const r = await removeGuthabenAction(id)
+    setBusy(false)
+    if (!r.ok) {
+      toast.error(r.error ?? 'Anrechnung konnte nicht entfernt werden.')
+      return
+    }
+    toast.success('Anrechnung entfernt, das Guthaben ist wieder frei')
+    setOpen(false)
+    router.refresh()
+  }
+
   async function deleteDraft() {
     setBusy(true)
     const r = await deleteInvoiceAction(id)
@@ -174,14 +215,65 @@ export default function InvoiceActions({
             <a href={pdfUrl}><Download className="h-4 w-4 mr-2" />PDF herunterladen</a>
           </Button>
           {(status === 'entwurf' || status === 'versendet') && (
-            <Button variant="outline" disabled={busy} onClick={send}>
+            <SendenBestaetigen
+              disabled={busy}
+              titel={`Rechnung ${rechnungsnummer} ${status === 'versendet' ? 'erneut ' : ''}senden?`}
+              text="Die Rechnung geht als PDF"
+              empfaenger={email}
+              onSenden={send}
+            >
               <Send className="h-4 w-4 mr-2" />{status === 'versendet' ? 'Erneut senden' : 'Senden'}
-            </Button>
+            </SendenBestaetigen>
           )}
           {status === 'versendet' && !verrechnung && (
-            <Button variant="outline" disabled={busy} onClick={remind}>
+            <SendenBestaetigen
+              disabled={busy}
+              titel="Zahlungserinnerung senden?"
+              text={`Die Erinnerung für ${rechnungsnummer} geht mit der Rechnung im Anhang`}
+              empfaenger={email}
+              onSenden={remind}
+            >
               <BellRing className="h-4 w-4 mr-2" />Erinnerung senden
-            </Button>
+            </SendenBestaetigen>
+          )}
+          {offen && !verrechnung && (guthabenAngerechnet > 0 || guthabenVerfuegbar > 0) && (
+            <div className="space-y-2 rounded-md border p-3 text-sm">
+              <p className="font-medium">Guthaben</p>
+              {guthabenAngerechnet > 0 && (
+                <p className="text-muted-foreground tabular-nums">
+                  {formatChf(guthabenAngerechnet)} angerechnet, zu bezahlen {formatChf(zuBezahlen({ betrag, guthaben_angerechnet: guthabenAngerechnet }))}.
+                </p>
+              )}
+              {guthabenVerfuegbar > 0 && neueAnrechnung > guthabenAngerechnet && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="outline" disabled={busy} className="w-full">
+                      <PiggyBank className="h-4 w-4 mr-2" />Guthaben anrechnen ({formatChf(guthabenVerfuegbar)} frei)
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Guthaben an {rechnungsnummer} anrechnen?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Angerechnet werden {formatChf(neueAnrechnung)}, zu bezahlen bleiben {formatChf(zuBezahlen({ betrag, guthaben_angerechnet: neueAnrechnung }))}. Das PDF zeigt den Abzug, der QR-Zahlteil lautet auf den Rest.
+                        {status === 'versendet' && (neueAnrechnung >= betrag
+                          ? ' Die Rechnung ist damit ganz beglichen und gilt als bezahlt.'
+                          : ' Schicke die angepasste Rechnung danach mit «Erneut senden».')}
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                      <AlertDialogAction onClick={guthabenAnrechnen}>Anrechnen</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
+              {guthabenAngerechnet > 0 && (
+                <Button variant="outline" disabled={busy} className="w-full" onClick={guthabenEntfernen}>
+                  <Undo2 className="h-4 w-4 mr-2" />Anrechnung entfernen
+                </Button>
+              )}
+            </div>
           )}
           {status === 'versendet' && erinnertAm && (
             <p className="-mt-1 text-xs text-muted-foreground">Zuletzt erinnert am {formatDatum(erinnertAm)}</p>

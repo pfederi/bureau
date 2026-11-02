@@ -101,12 +101,22 @@ describe('coveredAmounts', () => {
 })
 
 describe('computeCustomerOwed', () => {
-  const normal = (id: string, status: 'versendet' | 'bezahlt', betrag: number) =>
+  const normal = (id: string, status: 'versendet' | 'bezahlt' | 'entwurf' | 'storniert', betrag: number) =>
     ({ id, rechnungsnummer: id, rechnungsdatum: '2026-05-01', betrag, status, paid_at: null })
 
   it('adds the open account balance and open regular invoices', () => {
     const o = computeCustomerOwed(1500, [normal('a', 'versendet', 1200), normal('b', 'bezahlt', 800)])
     expect(o).toEqual({ konto: 1500, guthaben: 0, offeneRechnungen: 1200, offeneAnzahl: 1, total: 2700 })
+  })
+
+  it('ignores drafts and cancelled invoices (the account list shows drafts, «Offen» does not count them)', () => {
+    const o = computeCustomerOwed(0, [normal('a', 'entwurf', 80), normal('b', 'storniert', 500), normal('c', 'versendet', 160)])
+    expect(o).toMatchObject({ offeneRechnungen: 160, offeneAnzahl: 1, total: 160 })
+  })
+
+  it('counts only what is left to pay after a credit', () => {
+    const o = computeCustomerOwed(0, [{ ...normal('a', 'versendet', 400), guthaben_angerechnet: 100 }, normal('b', 'versendet', 160)])
+    expect(o).toMatchObject({ offeneRechnungen: 460, offeneAnzahl: 2, total: 460 })
   })
 
   it('does not offset a material credit against regular invoices', () => {

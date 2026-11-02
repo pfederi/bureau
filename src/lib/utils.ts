@@ -22,6 +22,14 @@ export function formatDatum(iso: string | null | undefined): string {
   return m ? `${m[3]}.${m[2]}.${m[1]}` : iso
 }
 
+/** Zeitstempel als «27.10.2026, 17:00» – Datum und Uhrzeit beide in Zürcher Zeit. */
+export function formatZeitpunkt(iso: string): string {
+  const d = new Date(iso)
+  const tz = { timeZone: 'Europe/Zurich' } as const
+  const datum = d.toLocaleDateString('de-CH', { ...tz, day: '2-digit', month: '2-digit', year: 'numeric' })
+  return `${datum}, ${d.toLocaleTimeString('de-CH', { ...tz, hour: '2-digit', minute: '2-digit' })}`
+}
+
 /**
  * Vorname für die Anzeige: aus dem Benutzerprofil (first_name/full_name/name),
  * sonst aus dem Absendernamen, sonst aus dem Teil vor dem @ der E-Mail.

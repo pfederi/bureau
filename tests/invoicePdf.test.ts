@@ -34,6 +34,24 @@ describe('renderInvoicePdf', () => {
     const buf = await renderInvoicePdf({ invoice: { ...invoice, rabatt_prozent: 10, betrag: 56.84 }, items, customer, settings })
     expect(buf.subarray(0, 5).toString()).toBe('%PDF-')
   })
+
+  it('bills only the rest after a credit and drops the QR page when nothing is left', async () => {
+    const { extractText, getDocumentProxy } = await import('unpdf')
+    const text = async (buf: Buffer) => (await extractText(await getDocumentProxy(new Uint8Array(buf)), { mergePages: true })).text.replace(/\s+/g, ' ')
+    const pages = (buf: Buffer) => (buf.toString('latin1').match(/\/Type\s*\/Page[^s]/g) ?? []).length
+    const mitGuthaben = { ...invoice, betrag: 400, guthaben_angerechnet: 100, guthaben_text: 'Überzahlung RE-1' }
+
+    const teil = await renderInvoicePdf({ invoice: mitGuthaben, items, customer, settings })
+    const t = await text(teil)
+    expect(t).toContain('Abzüglich Guthaben (Überzahlung RE-1)')
+    expect(t).toContain('Zu bezahlen')
+    expect(t).toContain('CHF 300.00')
+    expect(pages(teil)).toBe(2)
+
+    const voll = await renderInvoicePdf({ invoice: { ...mitGuthaben, guthaben_angerechnet: 400 }, items, customer, settings })
+    expect(await text(voll)).toContain('keine Zahlung nötig')
+    expect(pages(voll)).toBe(1)
+  })
 })
 
 describe('renderQuotePdf', () => {

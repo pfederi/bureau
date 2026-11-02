@@ -69,6 +69,10 @@ export type Invoice = {
   hosting_jahr: number | null
   /** Wird über das Kundenkonto mit Material/Zahlungen verrechnet statt einzeln bezahlt. */
   verrechnung_material: boolean
+  /** Angerechnetes Kundenguthaben (z. B. Überzahlung); der Kunde zahlt `betrag` minus diesen Betrag */
+  guthaben_angerechnet?: number
+  /** Herkunft des Guthabens für das PDF, z. B. «Überzahlung RE-…» */
+  guthaben_text?: string | null
   waehrung: string
   notiz: string | null
   mwst_hinweis: string
@@ -147,4 +151,16 @@ export type Expense = {
   betrag_original: number | null
   beleg_path: string | null
   beleg_name: string | null
+}
+
+/** Guthaben eines Kunden, z. B. aus einer Überzahlung; wird an Rechnungen angerechnet. */
+export type CustomerGuthaben = {
+  id: string
+  customer_id: string
+  datum: string
+  betrag: number
+  beschreibung: string
+  /** überzahlte Rechnung */
+  invoice_id: string | null
+  created_at: string
 }

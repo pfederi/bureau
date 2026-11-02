@@ -22,6 +22,12 @@ import { listSentTimeReports } from '@/lib/db/timeReport'
 import { listSites } from '@/lib/db/sites'
 import SitesCard from './SitesCard'
 import { defaultReportMonth, reportMonths } from '@/lib/timeEntries/report'
+import { hoursOverview } from '@/lib/timeEntries/hoursOverview'
+import HoursCard from '../../../HoursCard'
+import GuthabenCard from '../../../GuthabenCard'
+import GuthabenDialog, { GuthabenAufsKonto, GuthabenLoeschen } from './GuthabenDialog'
+import { listGuthaben } from '@/lib/db/guthaben'
+import { angerechnet, guthabenSaldo, guthabenVerlauf, zuBezahlen } from '@/lib/invoices/guthaben'
 
 export async function generateMetadata(props: { params: Promise<{ id: string }> }) {
   const params = await props.params
@@ -33,22 +39,25 @@ export default async function KontoPage(props: { params: Promise<{ id: string }>
   const params = await props.params
   const customer = await getCustomer(params.id)
   if (!customer) notFound()
-  const [invoices, credits, timeEntries, sentReports, sites] = await Promise.all([
+  const [invoices, credits, timeEntries, sentReports, sites, guthaben] = await Promise.all([
     listInvoices({ customerId: customer.id }), listCredits(customer.id), listTimeEntries({ status: 'alle', customerId: customer.id }),
-    listSentTimeReports(customer.id).catch(() => []), listSites(customer.id).catch(() => []),
+    listSentTimeReports(customer.id).catch(() => []), listSites(customer.id).catch(() => []), listGuthaben(customer.id),
   ])
+  const guthabenFrei = guthabenSaldo(guthaben, invoices)
   const monate = reportMonths(timeEntries)
   const budget = budgetUsage(customer, timeEntries, new Date())
   // Projekt-Auswertung nur, wenn mindestens ein Eintrag einem Projekt zugeordnet ist
   const projekte = timeEntries.some(e => e.projekt) ? projectStats(timeEntries, invoices) : []
+  const stunden = hoursOverview(timeEntries, invoices)
 
   const jahr = new Date().getFullYear()
   const today = new Date().toISOString().slice(0, 10)
   const stats = computeDashboardStats(invoices, 0, jahr, coveredAmounts(invoices, credits))
 
   const account = computeAccount(invoices, credits)
-  // Normale Rechnungen (mit Zahlung), neueste zuerst – listInvoices sortiert bereits absteigend.
-  const paymentInvoices = invoices.filter(i => !i.verrechnung_material && i.status !== 'entwurf')
+  // Normale Rechnungen (mit Zahlung) inkl. Entwürfen, neueste zuerst – listInvoices sortiert bereits absteigend.
+  // «Offen» zählt nur versendete (computeCustomerOwed), Entwürfe stehen nur in der Liste.
+  const paymentInvoices = invoices.filter(i => !i.verrechnung_material)
   const owed = computeCustomerOwed(account.saldo, paymentInvoices)
   // Material-Teil nur zeigen, wenn beim Kunden wirklich gegengerechnet wird.
   const materialAktiv = account.rechnungen.length > 0 || credits.length > 0
@@ -98,16 +107,24 @@ export default async function KontoPage(props: { params: Promise<{ id: string }>
                   <span>Guthaben Material</span><span>{formatChf(owed.guthaben)}</span>
                 </div>
               )}
+              {guthabenFrei > 0 && (
+                <div className="flex justify-between gap-2 text-amber-400"><span>Guthaben</span><span>{formatChf(guthabenFrei)}</span></div>
+              )}
             </div>
-          ) : `${owed.offeneAnzahl} versendet, noch nicht bezahlt`}
+          ) : (
+            <>
+              {owed.offeneAnzahl} versendet, noch nicht bezahlt
+              {guthabenFrei > 0 && <span className="block text-amber-400 tabular-nums">Guthaben {formatChf(guthabenFrei)}, noch nicht angerechnet</span>}
+            </>
+          )}
         />
       </div>
 
       {budget && (
         <Card>
           <CardContent className="pt-4 sm:pt-6">
-            <div className="mb-3 flex items-baseline justify-between gap-4">
-              <div className="text-sm font-medium">Stundenbudget {budget.label}</div>
+            <div className="karte-titel -mt-3 flex items-baseline justify-between gap-4 py-3">
+              <h2 className="text-sm font-medium">Stundenbudget {budget.label}</h2>
               <a href={`/admin/zeiterfassung?kunde=${customer.id}&status=alle`} className="text-xs text-muted-foreground hover:text-foreground hover:underline">Zeiteinträge →</a>
             </div>
             <BudgetBar usage={budget} />
@@ -117,7 +134,15 @@ export default async function KontoPage(props: { params: Promise<{ id: string }>
 
       <Card>
         <CardContent className="pt-4 sm:pt-6">
-          <div className="mb-4 text-sm font-medium">{materialAktiv ? 'Rechnungen mit Zahlung' : 'Rechnungen'}</div>
+          <div className="karte-titel -mt-3 mb-1 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 py-3">
+            <h2 className="text-sm font-medium">{materialAktiv ? 'Rechnungen mit Zahlung' : 'Rechnungen'}</h2>
+            <GuthabenDialog
+              customerId={customer.id}
+              today={today}
+              rechnungen={paymentInvoices.filter(i => i.status === 'versendet' || i.status === 'bezahlt').map(i => ({ id: i.id, rechnungsnummer: i.rechnungsnummer }))}
+              materialkonto={materialAktiv ? { offen: owed.konto } : undefined}
+            />
+          </div>
           <Table>
             <TableHeader>
               <TableRow>
@@ -133,7 +158,9 @@ export default async function KontoPage(props: { params: Promise<{ id: string }>
                   ? <Badge variant="outline" className="border-green-500 text-green-400">Bezahlt{i.paid_at ? ` ${formatDatum(i.paid_at)}` : ''}</Badge>
                   : i.status === 'storniert'
                     ? <Badge variant="outline" className="text-muted-foreground line-through">Storniert</Badge>
-                    : <Badge>Offen</Badge>
+                    : i.status === 'entwurf'
+                      ? <Badge variant="secondary">Entwurf</Badge>
+                      : <Badge>Offen</Badge>
                 return (
                   <TableRow key={i.id}>
                     <TableCell className="hidden tabular-nums sm:table-cell">{formatDatum(i.rechnungsdatum)}</TableCell>
@@ -146,19 +173,44 @@ export default async function KontoPage(props: { params: Promise<{ id: string }>
                       </div>
                     </TableCell>
                     <TableCell className="hidden sm:table-cell">{status}</TableCell>
-                    <TableCell className="text-right tabular-nums align-top sm:align-middle">{formatBetrag(Number(i.betrag), { tabelle: true })}</TableCell>
+                    <TableCell className="text-right tabular-nums align-top sm:align-middle">
+                      {formatBetrag(Number(i.betrag), { tabelle: true })}
+                      {angerechnet(i) > 0 && i.status !== 'storniert' && (
+                        <span className="block text-xs text-muted-foreground">
+                          − {formatBetrag(angerechnet(i), { tabelle: true })} Guthaben<br />zu bezahlen {formatBetrag(zuBezahlen(i), { tabelle: true })}
+                        </span>
+                      )}
+                    </TableCell>
                   </TableRow>
                 )
               })}
               {paymentInvoices.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center text-muted-foreground py-8">Noch keine versendeten Rechnungen.</TableCell>
+                  <TableCell colSpan={4} className="text-center text-muted-foreground py-8">Noch keine Rechnungen.</TableCell>
                 </TableRow>
               )}
             </TableBody>
           </Table>
         </CardContent>
       </Card>
+
+      <GuthabenCard
+        verlauf={guthabenVerlauf(guthaben, invoices)}
+        saldo={guthabenFrei}
+        aktion={e => (
+          <div className="flex justify-end">
+            {materialAktiv && <GuthabenAufsKonto id={e.id} beschreibung={e.beschreibung} betrag={Number(e.betrag)} />}
+            <GuthabenLoeschen id={e.id} beschreibung={e.beschreibung} />
+          </div>
+        )}
+      />
+
+      <HoursCard
+        {...stunden}
+        rechnungLink={r => (
+          <InvoicePreviewButton id={r.id} rechnungsnummer={r.rechnungsnummer} className="wrap-anywhere">{r.rechnungsnummer}</InvoicePreviewButton>
+        )}
+      />
 
       {projekte.length > 0 && <ProjectsCard rows={projekte} />}
 

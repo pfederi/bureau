@@ -6,6 +6,7 @@ import { syncCustomerAccount } from '@/modules/material'
 import { renderInvoicePdf } from '@/lib/pdf/invoicePdf'
 import { buildInvoiceEmail, sendMail, senderFor } from '@/lib/email/sendInvoice'
 import { invoiceFileBase } from '@/lib/pdf/disposition'
+import { angerechnet, zuBezahlen } from '@/lib/invoices/guthaben'
 
 export async function POST(_req: NextRequest, props: { params: Promise<{ id: string }> }) {
   const params = await props.params
@@ -32,7 +33,13 @@ export async function POST(_req: NextRequest, props: { params: Promise<{ id: str
     return NextResponse.json({ error: `Versand fehlgeschlagen: ${e.message}` }, { status: 502 })
   }
   // Erstes Versanddatum behalten: «Erneut senden» soll die Tage seit Versand nicht zurücksetzen.
-  await setInvoiceStatus(params.id, 'versendet', { sent_at: invoice.sent_at ?? new Date().toISOString() })
+  const sentAt = invoice.sent_at ?? new Date().toISOString()
+  // Ganz mit Guthaben beglichen: nichts mehr offen, gilt gleich als bezahlt
+  if (angerechnet(invoice) > 0 && zuBezahlen(invoice) === 0) {
+    await setInvoiceStatus(params.id, 'bezahlt', { sent_at: sentAt, paid_at: invoice.paid_at ?? new Date().toISOString() })
+  } else {
+    await setInvoiceStatus(params.id, 'versendet', { sent_at: sentAt })
+  }
   // Vorhandenes Guthaben im Kundenkonto deckt die Rechnung evtl. sofort.
   if (invoice.verrechnung_material) await syncCustomerAccount(invoice.customer_id)
   return NextResponse.json({ ok: true })

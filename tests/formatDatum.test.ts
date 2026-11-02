@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { formatDatum } from '@/lib/utils'
+import { formatDatum, formatZeitpunkt } from '@/lib/utils'
 
 describe('formatDatum', () => {
   it('formats ISO dates Swiss style', () => {
@@ -23,5 +23,14 @@ describe('displayFirstName', () => {
     expect(displayFirstName({ full_name: 'Anna Muster' }, 'Beat Beispiel', 'x@example.ch')).toBe('Anna')
     expect(displayFirstName({}, 'Anna Muster', 'x@example.ch')).toBe('Anna')
     expect(displayFirstName(null, '', 'anna@example.ch')).toBe('Anna')
+  })
+})
+
+describe('formatZeitpunkt', () => {
+  it('formats date and time in Zurich time', () => {
+    expect(formatZeitpunkt('2026-10-27T16:00:04.199+00:00')).toBe('27.10.2026, 17:00')
+  })
+  it('uses the Zurich date shortly after midnight', () => {
+    expect(formatZeitpunkt('2026-10-22T22:30:00Z')).toBe('23.10.2026, 00:30')
   })
 })

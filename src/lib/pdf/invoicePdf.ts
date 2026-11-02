@@ -5,6 +5,7 @@ import { computeInvoiceTotal, computeDiscountedTotals } from '@/lib/invoices/cal
 import { formatDatum } from '@/lib/utils'
 import { formatChf } from '@/lib/invoices/stats'
 import { addressLines, streetLine } from '@/lib/address'
+import { angerechnet, zuBezahlen } from '@/lib/invoices/guthaben'
 
 type Data = { invoice: Invoice; items: InvoiceItem[]; customer: Customer; settings: Settings }
 
@@ -19,6 +20,8 @@ type DocSpec = {
   zusatz: string
   betragLabel: string
   betrag: number
+  /** Angerechnetes Guthaben (nur Rechnung): Abzug und «Zu bezahlen» unter dem Betrag, QR über den Rest */
+  guthaben?: { betrag: number; text: string | null }
   rabattProzent: number
   mwstHinweis: string
   /** Freitext unter dem Betrag (nur Offerte) */
@@ -43,6 +46,7 @@ export async function renderInvoicePdf(data: Data): Promise<Buffer> {
     zusatz: `Leistungsdatum: ${invoice.leistungsdatum ?? ''}`,
     betragLabel: 'Rechnungsbetrag',
     betrag: Number(invoice.betrag),
+    guthaben: angerechnet(invoice) > 0 ? { betrag: angerechnet(invoice), text: invoice.guthaben_text ?? null } : undefined,
     rabattProzent: Number(invoice.rabatt_prozent ?? 0),
     mwstHinweis: invoice.mwst_hinweis,
     stempel: invoice.status === 'storniert' ? 'STORNIERT' : undefined,
@@ -145,7 +149,7 @@ async function renderDocument(items: InvoiceItem[], customer: Customer, settings
 
   // Totals (als Block zusammenhalten)
   const rabattProzent = spec.rabattProzent
-  ensureSpace(rabattProzent > 0 ? 70 : 35)
+  ensureSpace((rabattProzent > 0 ? 70 : 35) + (spec.guthaben ? 50 : 0))
   doc.moveTo(50, y).lineTo(545, y).stroke()
   y += 10
   if (rabattProzent > 0) {
@@ -161,6 +165,26 @@ async function renderDocument(items: InvoiceItem[], customer: Customer, settings
   doc.fontSize(11)
   doc.text(spec.betragLabel, 50, y)
   doc.text(fr(spec.betrag), 350, y, { width: 195, align: 'right', lineBreak: false })
+  // Guthaben (z. B. Überzahlung) abziehen: Rechnungsbetrag bleibt, der Kunde zahlt den Rest
+  const zahlbetrag = spec.guthaben ? zuBezahlen({ betrag: spec.betrag, guthaben_angerechnet: spec.guthaben.betrag }) : spec.betrag
+  if (spec.guthaben) {
+    y += 20
+    doc.fontSize(9)
+    const label = `Abzüglich Guthaben${spec.guthaben.text ? ` (${spec.guthaben.text})` : ''}`
+    doc.text(label, 50, y, { width: 290 })
+    doc.text(`– ${fr(spec.guthaben.betrag)}`, 350, y, { width: 195, align: 'right', lineBreak: false })
+    y = Math.max(y + 15, doc.y + 3)
+    doc.moveTo(350, y).lineTo(545, y).stroke()
+    y += 8
+    doc.font('Helvetica-Bold').fontSize(11)
+    doc.text('Zu bezahlen', 50, y)
+    doc.text(fr(zahlbetrag), 350, y, { width: 195, align: 'right', lineBreak: false })
+    doc.font('Helvetica')
+    if (zahlbetrag === 0) {
+      y += 18
+      doc.fontSize(9).text('Mit Ihrem Guthaben vollständig beglichen – es ist keine Zahlung nötig.', 50, y)
+    }
+  }
 
   // Freitext der Offerte (z. B. Leistungsbeschrieb, Konditionen)
   if (spec.text?.trim()) {
@@ -209,7 +233,8 @@ async function renderDocument(items: InvoiceItem[], customer: Customer, settings
   }
   doc.switchToPage(pages.start + pages.count - 1)
 
-  if (!spec.qr) {
+  // Nichts mehr zu bezahlen: kein Einzahlungsschein
+  if (!spec.qr || zahlbetrag === 0) {
     doc.end()
     return done
   }
@@ -217,7 +242,7 @@ async function renderDocument(items: InvoiceItem[], customer: Customer, settings
   // Schweizer QR-Zahlteil (neue Seite unten via SwissQRBill)
   const qr = new SwissQRBill({
     currency: 'CHF',
-    amount: spec.betrag,
+    amount: zahlbetrag,
     creditor: {
       account: settings.iban.replace(/\s+/g, ''),
       name: settings.absender_name,

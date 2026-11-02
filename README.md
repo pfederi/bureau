@@ -6,7 +6,7 @@ Rechnungen, Stunden und Ausgaben für Selbständige in der Schweiz – selbst ge
 
 ## Funktionen
 
-- **Rechnen:** Rechnungen mit QR-Zahlteil (PDF), Offerten, Zahlungserinnerungen, Storno, Hosting-Sammelrechnungen
+- **Rechnen:** Rechnungen mit QR-Zahlteil (PDF), Offerten, Zahlungserinnerungen, Storno, Überzahlungen als Kundenguthaben, Hosting-Sammelrechnungen
 - **Erfassen:** Zeiterfassung mit Projekten und Stundenbudget, Ausgaben mit Belegen und automatischer Belegerkennung
 - **Überblick:** Dashboard mit Todos, offenen Beträgen, Steuer-Rücklage, Jahresabschluss und Steuerpaket als ZIP
 - **Kunden:** Kundenportal mit Rechnungen und Stundenrapporten, Website-Überwachung mit Alarm

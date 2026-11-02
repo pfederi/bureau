@@ -1,8 +1,9 @@
 import type { Expense, ExpenseCategory, Invoice } from '@/lib/types'
 import { EXPENSE_CATEGORIES } from './categories'
 import { csvCell } from '@/lib/export/csv'
+import { zuBezahlen } from '@/lib/invoices/guthaben'
 
-type ReportInvoice = Pick<Invoice, 'id' | 'rechnungsnummer' | 'rechnungsdatum' | 'betrag' | 'status' | 'paid_at' | 'verrechnung_material'>
+type ReportInvoice = Pick<Invoice, 'id' | 'rechnungsnummer' | 'rechnungsdatum' | 'betrag' | 'status' | 'paid_at' | 'verrechnung_material' | 'guthaben_angerechnet'>
   & { customer?: { firma_oder_name: string } | null }
 
 export type IncomeRow = { datum: string; rechnungsnummer: string; kunde: string; betrag: number; art: 'Zahlung' | 'Material' }
@@ -51,7 +52,7 @@ export function computeYearReport(invoices: ReportInvoice[], expenses: Expense[]
   const offenAmJahresende: OpenRow[] = invoices
     .filter(i => (i.status === 'versendet' || i.status === 'bezahlt') && i.rechnungsdatum <= `${y}-12-31`)
     .filter(i => i.status === 'versendet' || (i.paid_at !== null && i.paid_at.slice(0, 4) > y))
-    .map(i => ({ rechnungsnummer: i.rechnungsnummer, kunde: kunde(i), rechnungsdatum: i.rechnungsdatum, betrag: Number(i.betrag) }))
+    .map(i => ({ rechnungsnummer: i.rechnungsnummer, kunde: kunde(i), rechnungsdatum: i.rechnungsdatum, betrag: zuBezahlen(i) }))
     .sort((a, b) => a.rechnungsdatum.localeCompare(b.rechnungsdatum))
 
   const ausgaben = expenses.filter(e => e.datum.startsWith(y)).sort((a, b) => a.datum.localeCompare(b.datum))

@@ -1,6 +1,7 @@
 import type { Customer, Invoice, Quote, TimeEntry } from '@/lib/types'
 import { hostingItemForYear, FIRST_HOSTING_YEAR } from '@/lib/invoices/hosting'
 import { computeItemTotal } from '@/lib/invoices/calc'
+import { zuBezahlen } from '@/lib/invoices/guthaben'
 import type { MissingRecurring } from '@/lib/expenses/recurring'
 import { ZAHLUNGSFRIST_TAGE, formatStunden } from '@/lib/invoices/stats'
 import { budgetUsage } from '@/lib/invoices/budget'
@@ -61,7 +62,7 @@ export function computeTodos(input: {
 
   // Überfällige Rechnungen (Material-Verrechnung wird nicht gemahnt, die läuft übers Kundenkonto)
   for (const i of input.invoices) {
-    if (i.status !== 'versendet' || i.verrechnung_material) continue
+    if (i.status !== 'versendet' || i.verrechnung_material || zuBezahlen(i) === 0) continue
     const offen = tageSeit(i.sent_at ?? i.rechnungsdatum, now)
     if (offen <= ZAHLUNGSFRIST_TAGE) continue
     const seitErinnerung = i.erinnert_am ? tageSeit(i.erinnert_am, now) : null
@@ -74,7 +75,7 @@ export function computeTodos(input: {
       href: `/admin/rechnungen?kunde=${i.customer_id}&status=versendet&jahr=alle`,
       dringend: true,
       tage: offen - ZAHLUNGSFRIST_TAGE,
-      betrag: Number(i.betrag),
+      betrag: zuBezahlen(i),
       erinnern: email && (seitErinnerung === null || seitErinnerung >= ERINNERUNG_ABSTAND_TAGE)
         ? { invoiceId: i.id, rechnungsnummer: i.rechnungsnummer, email }
         : undefined,

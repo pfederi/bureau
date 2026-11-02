@@ -11,7 +11,7 @@ export default function ProjectsCard({ rows }: { rows: ProjectStat[] }) {
   return (
     <Card>
       <CardContent className="pt-4 sm:pt-6">
-        <h2 className="text-sm font-medium">Projekte</h2>
+        <h2 className="karte-titel -mt-3 py-3 text-sm font-medium">Projekte</h2>
         <p className="mb-4 text-xs text-muted-foreground">
           Erfasste Stunden pro Projekt. „Pro Std.“ ist der effektive Ansatz: verrechneter Betrag nach Rabatt durch die verrechneten Stunden.
         </p>

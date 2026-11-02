@@ -3,6 +3,7 @@ import { useState } from 'react'
 import type { Customer, TimeEntry } from '@/lib/types'
 import { createInvoiceAction, updateInvoiceAction } from './actions'
 import { computeItemTotal, computeDiscountedTotals } from '@/lib/invoices/calc'
+import { anrechnungFuer, zuBezahlen } from '@/lib/invoices/guthaben'
 import { hasHosting, hostingItemForYear, hostingYears } from '@/lib/invoices/hosting'
 import { formatChf, formatBetrag } from '@/lib/invoices/stats'
 import type { HostingBilled } from '@/lib/db/invoices'
@@ -33,6 +34,8 @@ type InitialInvoice = {
   rabattProzent: number
   hostingJahr: number | null
   verrechnungMaterial: boolean
+  /** Bereits angerechnetes Guthaben dieses Entwurfs */
+  guthabenAngerechnet: number
   rows: Row[]
 }
 
@@ -42,8 +45,10 @@ const EINHEITEN = ['Stück', 'Std.', 'Pauschal', 'Tag', 'km', 'Monat', 'Jahr']
 const CURRENT_YEAR = new Date().getFullYear()
 const HOSTING_YEARS = hostingYears()
 
-export default function InvoiceForm({ customers, mwstHinweis, today, hostingBilled, initial, defaultCustomerId }: {
+export default function InvoiceForm({ customers, mwstHinweis, today, hostingBilled, guthaben = {}, initial, defaultCustomerId }: {
   customers: Customer[]; mwstHinweis: string; today: string; hostingBilled: HostingBilled[]; initial?: InitialInvoice
+  /** Verfügbares Guthaben pro Kunde (inkl. dem, was dieser Entwurf schon angerechnet hat) */
+  guthaben?: Record<string, number>
   /** Vorauswahl bei neuer Rechnung, z. B. aus dem Kundenkonto */
   defaultCustomerId?: string
 }) {
@@ -55,6 +60,10 @@ export default function InvoiceForm({ customers, mwstHinweis, today, hostingBill
   const [rabattProzent, setRabattProzent] = useState(initial?.rabattProzent ?? 0)
   const zwischensumme = rows.reduce((s, r) => s + computeItemTotal(r.menge, r.einzelpreis), 0)
   const { rabatt, total } = computeDiscountedTotals(zwischensumme, rabattProzent)
+  const [material, setMaterial] = useState(initial?.verrechnungMaterial ?? false)
+  const [guthabenAn, setGuthabenAn] = useState((initial?.guthabenAngerechnet ?? 0) > 0)
+  const verfuegbar = guthaben[customerId] ?? 0
+  const guthabenAbzug = !material && guthabenAn ? anrechnungFuer(verfuegbar, total) : 0
 
   const [pickerOpen, setPickerOpen] = useState(false)
   const [openEntries, setOpenEntries] = useState<TimeEntry[]>([])
@@ -221,7 +230,8 @@ export default function InvoiceForm({ customers, mwstHinweis, today, hostingBill
                 type="checkbox"
                 name="verrechnung_material"
                 className="mt-0.5 h-4 w-4 rounded-sm border-input accent-primary"
-                defaultChecked={initial?.verrechnungMaterial ?? false}
+                checked={material}
+                onChange={e => setMaterial(e.target.checked)}
               />
               <span>
                 Mit Material verrechnen (Kundenkonto)
@@ -247,6 +257,27 @@ export default function InvoiceForm({ customers, mwstHinweis, today, hostingBill
               </div>
             )}
             <div className="text-base font-medium tabular-nums">Total: {formatChf(total)}</div>
+            {!material && verfuegbar > 0 && (
+              <label className="flex items-start gap-2 text-left">
+                <input
+                  type="checkbox"
+                  name="guthaben_anrechnen"
+                  className="mt-0.5 h-4 w-4 rounded-sm border-input accent-primary"
+                  checked={guthabenAn}
+                  onChange={e => setGuthabenAn(e.target.checked)}
+                />
+                <span>
+                  Guthaben anrechnen
+                  <span className="block text-xs text-muted-foreground">{formatChf(verfuegbar)} verfügbar, z. B. aus einer Überzahlung</span>
+                </span>
+              </label>
+            )}
+            {guthabenAbzug > 0 && (
+              <div className="text-right tabular-nums">
+                <div className="text-muted-foreground">Abzüglich Guthaben: − {formatChf(guthabenAbzug)}</div>
+                <div className="font-medium">Zu bezahlen: {formatChf(zuBezahlen({ betrag: total, guthaben_angerechnet: guthabenAbzug }))}</div>
+              </div>
+            )}
           </div>
           <div className="flex justify-end">
             <Button type="submit"><Save className="h-4 w-4 mr-1.5" />{isEdit ? 'Änderungen speichern' : 'Als Entwurf speichern'}</Button>

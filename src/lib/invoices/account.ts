@@ -1,4 +1,5 @@
 import type { CreditType, CustomerCredit, Invoice } from '@/lib/types'
+import { zuBezahlen } from './guthaben'
 
 /**
  * Kundenkonto für Rechnungen, die mit Material (oder Zahlungen) verrechnet
@@ -190,7 +191,7 @@ export function coveredAmounts(invoices: AccountInvoice[], credits: AccountCredi
   return result
 }
 
-export type PaymentInvoice = Pick<Invoice, 'id' | 'rechnungsnummer' | 'rechnungsdatum' | 'betrag' | 'status' | 'paid_at'>
+export type PaymentInvoice = Pick<Invoice, 'id' | 'rechnungsnummer' | 'rechnungsdatum' | 'betrag' | 'status' | 'paid_at' | 'guthaben_angerechnet'>
 
 export type CustomerOwed = {
   /** Offener Saldo im Materialkonto (nie negativ) */
@@ -211,7 +212,7 @@ export type CustomerOwed = {
 export function computeCustomerOwed(kontoSaldo: number, paymentInvoices: PaymentInvoice[]): CustomerOwed {
   const offen = paymentInvoices.filter(i => i.status === 'versendet')
   const konto = Math.max(cents(kontoSaldo), 0)
-  const offeneRechnungen = offen.reduce((s, i) => s + cents(i.betrag), 0)
+  const offeneRechnungen = offen.reduce((s, i) => s + cents(zuBezahlen(i)), 0)
   return {
     konto: chf(konto),
     guthaben: chf(Math.max(-cents(kontoSaldo), 0)),

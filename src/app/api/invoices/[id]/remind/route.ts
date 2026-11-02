@@ -5,6 +5,7 @@ import { getSettings } from '@/lib/db/settings'
 import { renderInvoicePdf } from '@/lib/pdf/invoicePdf'
 import { buildReminderEmail, sendMail, senderFor } from '@/lib/email/sendInvoice'
 import { invoiceFileBase } from '@/lib/pdf/disposition'
+import { zuBezahlen } from '@/lib/invoices/guthaben'
 
 /** Zahlungserinnerung mit der Rechnung im Anhang; merkt sich das Datum. */
 export async function POST(_req: NextRequest, props: { params: Promise<{ id: string }> }) {
@@ -26,7 +27,7 @@ export async function POST(_req: NextRequest, props: { params: Promise<{ id: str
       toEmail: customer.email,
       rechnungsnummer: invoice.rechnungsnummer,
       rechnungsdatum: invoice.rechnungsdatum,
-      betrag: Number(invoice.betrag),
+      betrag: zuBezahlen(invoice),
       fileBase: invoiceFileBase(invoice.rechnungsnummer, customer.firma_oder_name),
       pdf,
     }))

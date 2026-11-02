@@ -7,22 +7,22 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
-import { formatDatum } from '@/lib/utils'
+import { formatDatum, formatZeitpunkt } from '@/lib/utils'
 import {
-  DOWN_AB_FEHLVERSUCHEN, DOMAIN_WARNUNG_TAGE, SSL_WARNUNG_TAGE, registrableDomain, siteHost, tageBis, type MonitoredSite,
+  DOMAIN_WARNUNG_TAGE, SSL_WARNUNG_TAGE, registrableDomain, siteHost, siteStatus, tageBis, type MonitoredSite,
 } from '@/lib/monitoring/sites'
 import { addSiteAction, checkSitesAction, removeSiteAction } from './actions'
 import { HAEKCHEN, useBestaetigung } from '../../../useBestaetigung'
 import AlarmPunkt from '../../../AlarmPunkt'
 
-const zeit = (iso: string) => new Date(iso).toLocaleTimeString('de-CH', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Zurich' })
 
 function Status({ site }: { site: MonitoredSite }) {
-  if (site.erreichbar === null) return <Badge variant="secondary">Noch nicht geprüft</Badge>
-  if (site.fehlversuche >= DOWN_AB_FEHLVERSUCHEN) {
+  const status = siteStatus(site)
+  if (status === 'ungeprueft') return <Badge variant="secondary">Noch nicht geprüft</Badge>
+  if (status === 'down') {
     return <Badge variant="outline" className="gap-1.5 border-red-400 text-red-300"><AlarmPunkt />Nicht erreichbar</Badge>
   }
-  if (site.fehlversuche > 0) return <Badge variant="outline" className="border-amber-400 text-amber-400">Aussetzer</Badge>
+  if (status === 'aussetzer') return <Badge variant="outline" className="border-amber-400 text-amber-400">Aussetzer</Badge>
   return <Badge variant="outline" className="border-green-500 text-green-400">Erreichbar</Badge>
 }
 
@@ -72,7 +72,7 @@ export default function SitesCard({ customerId, sites }: { customerId: string; s
   return (
     <Card id="websites" className="scroll-mt-24">
       <CardContent className="pt-4 sm:pt-6">
-        <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
+        <div className="karte-titel -mt-3 flex flex-wrap items-start justify-between gap-2 py-3">
           <div className="min-w-0">
             <h2 className="text-sm font-medium">Websites</h2>
             <p className="text-xs text-muted-foreground">
@@ -108,7 +108,7 @@ export default function SitesCard({ customerId, sites }: { customerId: string; s
                       label="Domain" datum={s.domain_ablauf} warnTage={DOMAIN_WARNUNG_TAGE}
                       ohne={/\.(ch|li)$/.test(registrableDomain(siteHost(s.url))) ? 'Ablauf bei .ch nicht abrufbar' : 'unbekannt'}
                     />
-                    {s.geprueft_am && <span>geprüft {formatDatum(s.geprueft_am)} {zeit(s.geprueft_am)}</span>}
+                    {s.geprueft_am && <span>geprüft {formatZeitpunkt(s.geprueft_am)}</span>}
                   </div>
                 </div>
                 <Button

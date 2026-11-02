@@ -244,13 +244,36 @@
   :root:has(.sticky-kopf) { scroll-padding-top: calc(var(--sticky-kopf-h, 0px) + 3.5rem); }
   /* Tabellenköpfe der Seite kleben unter dem festen Seitenkopf (nicht in Dialogen: die liegen ausserhalb) */
   .sticky-kopf ~ * .tabelle-scroll { overflow: visible; }
-  .sticky-kopf ~ * .tabelle-scroll > table > thead th {
+  /*
+   * Klebende Stapel unter dem Seitenkopf: Kartentitel (.karte-titel), darunter der Untertitel
+   * einer Tabellengruppe (.tabelle-gruppe > h3), zuunterst der Tabellenkopf. Jede Ebene setzt
+   * ihre Höhe als Variable, die tieferen Ebenen rechnen sie zu ihrem Abstand dazu.
+   */
+  /* Nur Höhen: wirken erst über die Regeln mit .sticky-kopf, darum ohne Einschränkung (die Karte kann direktes Geschwister des Seitenkopfs sein) */
+  :has(> .karte-titel) { --titel-h: 2.75rem; }
+  :has(> .aufklapper-titel) { --titel-h: 4.25rem; }
+  .tabelle-gruppe { --gruppe-h: 2.25rem; }
+  .sticky-kopf ~ * .karte-titel {
     position: sticky;
     top: var(--sticky-kopf-h, 0px);
+    z-index: 22;
+    background: hsl(var(--card));
+  }
+  .sticky-kopf ~ * .tabelle-gruppe > h3 {
+    position: sticky;
+    top: calc(var(--sticky-kopf-h, 0px) + var(--titel-h, 0px));
+    z-index: 21;
+    background: hsl(var(--card));
+  }
+  .sticky-kopf ~ * .tabelle-scroll > table > thead th {
+    position: sticky;
+    top: calc(var(--sticky-kopf-h, 0px) + var(--titel-h, 0px) + var(--gruppe-h, 0px));
     z-index: 20;
     background: hsl(var(--card));
     box-shadow: inset 0 -1px 0 hsl(var(--border));
   }
+  /* Fokus nicht unter dem ganzen Stapel verdeckt (WCAG 2.4.11) */
+  :root:has(.sticky-kopf):has(.karte-titel) { scroll-padding-top: calc(var(--sticky-kopf-h, 0px) + 9rem); }
 }
 /* Beim Überscrollen (Gummiband in Safari/Trackpad) scheint html/body durch – im Admin
    dunkel statt Website-Hintergrund (hell je nach System- bzw. Website-Modus). */
@@ -278,4 +301,9 @@
   details[open]::details-content {
     block-size: auto;
   }
+}
+
+/* Website: Seite hinter der offenen Projekt-Lightbox nicht mitscrollen */
+html:has(dialog.lightbox[open]) {
+  overflow: hidden;
 }

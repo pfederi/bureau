@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { requireSession } from '@/lib/auth'
 import { createInvoice, updateInvoiceDraft, setInvoiceHostingYear, setInvoiceVerrechnung } from '@/lib/db/invoices'
 import { listCustomers } from '@/lib/db/customers'
+import { applyGuthaben, removeGuthaben } from '@/lib/db/guthaben'
 import { getSettings } from '@/lib/db/settings'
 import { hostingItemForYear } from '@/lib/invoices/hosting'
 import { computeItemTotal, normalizeDiscountPercent } from '@/lib/invoices/calc'
@@ -36,7 +37,9 @@ export async function createInvoiceAction(formData: FormData) {
   })
   const hostingJahr = parseHostingYear(formData)
   if (hostingJahr) await setInvoiceHostingYear(id, hostingJahr)
-  if (formData.get('verrechnung_material') === 'on') await setInvoiceVerrechnung(id, true)
+  const material = formData.get('verrechnung_material') === 'on'
+  if (material) await setInvoiceVerrechnung(id, true)
+  if (!material && formData.get('guthaben_anrechnen') === 'on') await applyGuthaben(id)
 
   revalidatePath('/admin')
   redirect('/admin')
@@ -57,7 +60,11 @@ export async function updateInvoiceAction(id: string, formData: FormData) {
 
   await updateInvoiceDraft(id, { customer_id, typ, rechnungsdatum, leistungsdatum, notiz, mwst_hinweis, rabatt_prozent, items })
   await setInvoiceHostingYear(id, parseHostingYear(formData))
-  await setInvoiceVerrechnung(id, formData.get('verrechnung_material') === 'on')
+  const material = formData.get('verrechnung_material') === 'on'
+  await setInvoiceVerrechnung(id, material)
+  // Neu berechnen: der Betrag kann sich geändert haben
+  if (!material && formData.get('guthaben_anrechnen') === 'on') await applyGuthaben(id)
+  else await removeGuthaben(id)
 
   revalidatePath('/admin')
   redirect('/admin')

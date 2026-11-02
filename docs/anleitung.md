@@ -65,7 +65,10 @@ Der Admin-Bereich verwaltet deine Kunden, Zeiten, Offerten, Rechnungen und Ausga
 
 ### Kunden-Dashboard
 - Ein Klick auf eine Kundenzeile (oder auf **Konto**) öffnet das Dashboard des Kunden mit Verdienst, offenem Betrag, Stundenbudget und allen Rechnungen.
+- **Guthaben** aus Überzahlungen erfasst du mit **Überzahlung erfassen** in der Karte Rechnungen; die Karte **Guthaben** zeigt Guthaben und Anrechnungen (siehe „Überzahlung und Guthaben“).
+- Die Rechnungsliste zeigt auch **Entwürfe** (Badge „Entwurf“). Zum offenen Betrag zählen sie erst, wenn du sie versendest; im Kundenlink erscheinen sie ebenfalls erst dann.
 - **Projekte** zeigt pro Projekt die Stunden, den verrechneten Betrag nach Rabatt und den effektiven Ansatz pro Stunde.
+- **Stunden** (zugeklappt, ein Klick öffnet sie) listet alle Zeiteinträge des Kunden, getrennt in **Nicht verrechnet** und **Verrechnet**, je mit Stunden und Betrag (Stunden × Ansatz). Bei verrechneten Einträgen steht die Rechnungsnummer, ein Klick öffnet die PDF-Vorschau; Einträge auf einem Entwurf sind mit „(Entwurf)“ markiert.
 - Von dort aus erstellst du direkt eine **Offerte** oder **Rechnung**, der Kunde ist schon ausgewählt. Über das **„…“-Menü** daneben bearbeitest oder löschst du den Kunden.
 - Ein Klick auf eine **Rechnungsnummer** öffnet die PDF-Vorschau mit „In neuem Tab“ und „Herunterladen“.
 
@@ -75,7 +78,11 @@ Der Admin-Bereich verwaltet deine Kunden, Zeiten, Offerten, Rechnungen und Ausga
 - Hat der Kunde ein Stundenbudget, steht der Verbrauch unter dem Total. Wurde der Monat schon gesendet, zeigt der Dialog wann und an wen.
 
 ### Kundenlink
-- **„…“-Menü → Kundenlink…** erstellt auf Knopfdruck einen privaten Link auf eine Seite für den Kunden: offener Betrag, alle Rechnungen als PDF, Stundenbudget und die Rechnungen wie in deinem Kunden-Dashboard – nur ohne Bearbeiten. Belege und Zeiteinträge sieht er nicht.
+- **„…“-Menü → Kundenlink…** erstellt auf Knopfdruck einen privaten Link auf eine Seite für den Kunden: offener Betrag, alle Rechnungen als PDF, Stundenbudget und die Rechnungen wie in deinem Kunden-Dashboard – nur ohne Bearbeiten. Belege sieht er nicht.
+- Hat der Kunde überwachte Websites, zeigt die Karte **Website** ihren Status (siehe „Websites überwachen“).
+- Hat der Kunde Guthaben (siehe „Überzahlung und Guthaben“), sieht er es beim offenen Betrag und in der Karte **Guthaben** mit allen Anrechnungen; bei den Rechnungen steht, was nach dem Abzug noch zu bezahlen ist.
+- Die Karte **Stunden** zeigt ihm seine Zeiteinträge mit Datum, Beschreibung, Stunden und Betrag, getrennt in verrechnet und nicht verrechnet. Einträge auf einem Rechnungsentwurf gelten für ihn als nicht verrechnet, bis du die Rechnung versendest. Die Beschreibungen erscheinen so, wie du sie erfasst hast – interne Notizen also nicht hineinschreiben.
+- Auf dem Computer bleibt der Kopf mit dem Kundennamen beim Scrollen oben stehen. Darunter kleben der Titel der Karte, die du gerade liest, und ihr Tabellenkopf – auch im Kunden-Dashboard.
 - Wer den Link hat, sieht die Seite; Suchmaschinen nehmen sie nicht auf. **Neuer Link** macht den alten ungültig, **Deaktivieren** schaltet die Seite ab. „aktiv“ im Menü zeigt, dass ein Link besteht.
 
 ### Websites überwachen
@@ -83,6 +90,7 @@ Der Admin-Bereich verwaltet deine Kunden, Zeiten, Offerten, Rechnungen und Ausga
 - Danach prüft die App die Erreichbarkeit alle 15 Minuten, SSL-Zertifikat und Domain-Ablauf einmal pro Tag. Nach zwei Fehlschlägen in Folge gilt eine Seite als nicht erreichbar: Du bekommst eine Mail, ebenso wenn sie wieder läuft, und sie steht in den Todos.
 - Läuft das Zertifikat in 14 Tagen oder die Domain in 30 Tagen ab, erscheint ein Todo. Bei `.ch`- und `.li`-Domains gibt die Registry kein Ablaufdatum heraus – deren Verlängerung meldet der Hinweis auf fehlende Belege.
 - **Jetzt prüfen** prüft sofort alles (ohne Mail), **✕** beendet die Überwachung.
+- Im **Kundenlink** sieht der Kunde seine Websites mit **Erreichbar** oder **Nicht erreichbar seit …**, dem Zeitpunkt der letzten Prüfung und dem Ablauf von SSL-Zertifikat und Domain (falls bekannt). Einzelne Aussetzer, Fehlermeldungen und Antwortzeiten siehst nur du.
 
 ## Rechnungen
 
@@ -98,13 +106,22 @@ Der Admin-Bereich verwaltet deine Kunden, Zeiten, Offerten, Rechnungen und Ausga
 - Bereits verrechnete Kunden sind markiert und nicht vorgewählt.
 
 ### Versenden und Zahlung
-- Im Dialog **Aktionen** einer Rechnung: PDF-Vorschau, Herunterladen und **Senden** per E-Mail. Das PDF enthält den Schweizer QR-Zahlteil.
+- Im Dialog **Aktionen** einer Rechnung: PDF-Vorschau, Herunterladen und **Senden** per E-Mail. Das PDF enthält den Schweizer QR-Zahlteil. Vor dem Versand fragt eine Rückfrage nach und zeigt, an welche Adresse die E-Mail geht – das gilt auch für **Erneut senden**, **Erinnerung senden** und Offerten.
 - Ist die Zahlung eingegangen, setzt du den Status auf **Bezahlt**.
 - **Erinnerung senden** schickt bei offenen Rechnungen eine freundliche Zahlungserinnerung mit dem PDF. Das Datum der letzten Erinnerung steht in der Liste.
 
 ### Stornieren
 - **Stornieren** gibt es bei versendeten oder bezahlten Rechnungen. Die Rechnung zählt danach nicht mehr zu Umsatz und MWST, und ihre Zeiteinträge werden wieder offen.
-- Mit **Korrigierte Kopie als Entwurf erstellen** entsteht gleich eine neue Rechnung mit denselben Positionen, die Zeiteinträge wandern dorthin.
+- Mit **Korrigierte Kopie als Entwurf erstellen** entsteht gleich eine neue Rechnung mit denselben Positionen, die Zeiteinträge wandern dorthin. War an der stornierten Rechnung Guthaben angerechnet, geht es an die Kopie.
+
+### Überzahlung und Guthaben
+Hat ein Kunde zu viel bezahlt, musst du nichts zurücküberweisen: Der Betrag wird zu seinem Guthaben und an einer Rechnung abgezogen.
+- **Erfassen:** Im Kunden-Dashboard in der Karte **Rechnungen** auf **Überzahlung erfassen** klicken. Datum des Zahlungseingangs, zu viel bezahlten Betrag und die überzahlte Rechnung angeben. Die Beschreibung („Überzahlung RE-…“) steht später auf der Rechnung, an der das Guthaben abgezogen wird.
+- **An einer neuen Rechnung anrechnen:** Hat der Kunde Guthaben, zeigt das Rechnungsformular unter dem Total **Guthaben anrechnen**. Angerechnet wird höchstens der Rechnungsbetrag; ein Rest bleibt für später.
+- **An einer offenen Rechnung anrechnen:** Im Dialog **Aktionen** der Rechnung auf **Guthaben anrechnen**. Danach die angepasste Rechnung mit **Erneut senden** schicken. Ist sie damit ganz beglichen, gilt sie gleich als bezahlt.
+- **Auf dem PDF** stehen Rechnungsbetrag, „Abzüglich Guthaben (Überzahlung RE-…)“ und **Zu bezahlen**; der QR-Zahlteil lautet auf den Rest. Ist nichts mehr zu bezahlen, entfällt der QR-Zahlteil.
+- **Umsatz:** Als Verdienst zählt der volle Rechnungsbetrag, offen ist nur der Rest. Das zu viel bezahlte Geld wird also genau einmal Umsatz – dann, wenn es angerechnet wird.
+- **Rückgängig:** **Anrechnung entfernen** im Dialog **Aktionen** (bei Entwürfen und offenen Rechnungen) gibt das Guthaben wieder frei. Ein Guthaben löschst du in der Karte **Guthaben** im Kunden-Dashboard, solange es noch nicht angerechnet ist.
 
 ## Offerten
 - **Neue Offerte:** Kunde, Offertdatum, Gültigkeit (standardmässig 30 Tage), Positionen, Rabatt und ein freier Text, zum Beispiel für Leistungsbeschrieb oder Termine.

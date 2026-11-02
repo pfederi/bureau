@@ -3,6 +3,7 @@ import { computeInvoiceTotal, computeDiscountedTotals } from '@/lib/invoices/cal
 import { formatInvoiceNumber } from '@/lib/invoices/number'
 import type { Customer, Invoice, InvoiceItem, InvoiceStatus, InvoiceType } from '@/lib/types'
 import { syncCustomerAccount } from '@/modules/material'
+import { applyGuthaben } from '@/lib/db/guthaben'
 
 export type CreateInvoiceInput = {
   customer_id: string
@@ -140,10 +141,15 @@ export async function setInvoiceReminded(id: string): Promise<void> {
   if (error) throw error
 }
 
-/** Rechnung über das Kundenkonto (Material) verrechnen oder normal bezahlen lassen. */
+/**
+ * Rechnung über das Kundenkonto (Material) verrechnen oder normal bezahlen lassen.
+ * Konto-Rechnungen tragen kein Kundenguthaben: eine Anrechnung wird dabei aufgehoben und das Guthaben frei.
+ */
 export async function setInvoiceVerrechnung(id: string, verrechnung: boolean): Promise<void> {
   const supabase = await createServerSupabase()
-  const { error } = await supabase.from('invoices').update({ verrechnung_material: verrechnung }).eq('id', id)
+  const { error } = await supabase.from('invoices')
+    .update(verrechnung ? { verrechnung_material: true, guthaben_angerechnet: 0, guthaben_text: null } : { verrechnung_material: false })
+    .eq('id', id)
   if (error) throw error
 }
 
@@ -236,6 +242,8 @@ export async function stornoInvoice(id: string, kopie: boolean, today: string): 
       .update({ hosting_jahr: invoice.hosting_jahr, verrechnung_material: invoice.verrechnung_material, offerte_id: invoice.offerte_id })
       .eq('id', newId)
     if (copyErr) throw copyErr
+    // Guthaben der stornierten Rechnung ist wieder frei und geht an die Kopie
+    if (Number(invoice.guthaben_angerechnet ?? 0) > 0 && !invoice.verrechnung_material) await applyGuthaben(newId)
   }
 
   const { error: teErr } = await supabase.from('time_entries')

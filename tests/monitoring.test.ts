@@ -1,6 +1,6 @@
 import { edition } from '@/edition'
 import { describe, it, expect } from 'vitest'
-import { applyCheck, isPrivateIp, needsDailyCheck, normalizeSiteUrl, registrableDomain, siteHost, siteProblems, type MonitoredSite } from '@/lib/monitoring/sites'
+import { applyCheck, isPrivateIp, needsDailyCheck, normalizeSiteUrl, registrableDomain, siteHost, siteProblems, siteStatus, type MonitoredSite } from '@/lib/monitoring/sites'
 import { buildSiteAlertEmail } from '@/lib/email/siteAlert'
 import { formatDatum } from '@/lib/utils'
 
@@ -68,6 +68,25 @@ describe('applyCheck', () => {
   })
 })
 
+describe('siteStatus', () => {
+  it('is unchecked before the first check', () => {
+    expect(siteStatus(site())).toBe('ungeprueft')
+  })
+  it('is reachable without failures', () => {
+    expect(siteStatus(site({ erreichbar: true }))).toBe('erreichbar')
+  })
+  it('shows a single failure as glitch for the admin, as reachable for the customer', () => {
+    const s = site({ erreichbar: false, fehlversuche: 1 })
+    expect(siteStatus(s)).toBe('aussetzer')
+    expect(siteStatus(s, { aussetzer: false })).toBe('erreichbar')
+  })
+  it('is down from the alarm threshold on, for everyone', () => {
+    const s = site({ erreichbar: false, fehlversuche: 2, down_seit: '2026-10-22T06:00:00Z' })
+    expect(siteStatus(s)).toBe('down')
+    expect(siteStatus(s, { aussetzer: false })).toBe('down')
+  })
+})
+
 describe('siteProblems', () => {
   const k = (s: MonitoredSite) => ({ ...s, kunde: 'Muster AG' })
   it('flags down sites as urgent and expiring certificates and domains', () => {
@@ -77,7 +96,7 @@ describe('siteProblems', () => {
       k(site({ id: 's3', ssl_ablauf: '2027-01-01', fehlversuche: 1 })),
     ], now, formatDatum)
     expect(p.map(x => x.key)).toEqual(['website-s1', 'ssl-s2', 'domain-s2'])
-    expect(p[0]).toMatchObject({ dringend: true, titel: 'kunde.ch nicht erreichbar · Muster AG', detail: 'seit 22.10.2026 09:30 · HTTP 502' })
+    expect(p[0]).toMatchObject({ dringend: true, titel: 'kunde.ch nicht erreichbar · Muster AG', detail: 'seit 22.10.2026, 09:30 · HTTP 502' })
     expect(p[1]).toMatchObject({ dringend: true, detail: 'läuft in 2 Tagen ab (24.10.2026)' })
     expect(p[2]).toMatchObject({ dringend: false, titel: 'Domain kunde.ch · Muster AG' })
   })
