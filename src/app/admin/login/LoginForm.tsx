@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createBrowserSupabase } from '@/lib/supabase/client'
 import { edition } from '@/edition'
+import { passkeyRpId } from '@/lib/adminHost'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -161,8 +162,8 @@ export default function LoginForm({ initialStep = 'passwort', hinweis }: { initi
                   </p>
                 )}
                 {arten.totp && codeSichtbar && <p className="text-center text-xs text-muted-foreground">oder Code aus der Authenticator-App</p>}
-                {/* Passkeys gelten nur für die Domain, auf der sie eingerichtet wurden (z. B. nicht lokal) */}
-                {!arten.totp && typeof window !== 'undefined' && edition.domain && window.location.hostname !== edition.domain && (
+                {/* Passkeys gelten nur für die Domain (samt Subdomains), auf der sie eingerichtet wurden (z. B. nicht lokal) */}
+                {!arten.totp && typeof window !== 'undefined' && edition.domain && !passkeyRpId(window.location.hostname, edition.domain) && (
                   <p className="text-xs text-muted-foreground">
                     Passkeys gelten nur auf der Domain, auf der du sie eingerichtet hast. Hier ({window.location.hostname}) brauchst du einen eigenen Passkey oder die Authenticator-App – einrichten unter Einstellungen auf {edition.domain}.
                   </p>

@@ -1,6 +1,7 @@
 import { createHmac, timingSafeEqual } from 'node:crypto'
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
+import { adminHostRedirect } from '@/lib/adminHost'
 import { adminRedirect, getAdminStep, LOGIN_PATH } from '@/lib/auth'
 import {
   alsSitzungsCookie, istEingabe, SITZUNG_COOKIE, sitzungLesen, sitzungPruefen, sitzungText, tokenSitzung,
@@ -24,6 +25,16 @@ function cookieLesen(wert: string | undefined) {
 }
 
 export async function proxy(request: NextRequest) {
+  // Eigene Admin-Adresse (ADMIN_HOST): `/` führt dort zum Admin, sonst bleibt die Website unberührt
+  if (request.nextUrl.pathname === '/') {
+    const ziel = adminHostRedirect(request.headers.get('host'), '/', process.env.ADMIN_HOST)
+    if (!ziel) return NextResponse.next()
+    const url = request.nextUrl.clone()
+    url.pathname = ziel
+    url.search = ''
+    return NextResponse.redirect(url)
+  }
+
   let response = NextResponse.next({ request })
 
   const supabase = createServerClient(
@@ -103,6 +114,6 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // alle Pfade mit requireSession() (Test: tests/sitzung.test.ts)
-  matcher: ['/admin/:path*', '/api/admin/:path*', '/api/invoices/:path*', '/api/quotes/:path*', '/api/time-entries/:path*'],
+  // alle Pfade mit requireSession() (Test: tests/sitzung.test.ts), dazu '/' für ADMIN_HOST
+  matcher: ['/', '/admin/:path*', '/api/admin/:path*', '/api/invoices/:path*', '/api/quotes/:path*', '/api/time-entries/:path*'],
 }

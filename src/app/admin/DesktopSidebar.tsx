@@ -10,7 +10,7 @@ import { SearchButton } from './SearchCommand'
 const AUTO_NARROW_QUERY = '(max-width: 1279px)'
 
 /**
- * Seitenleiste ab Desktop-Breite, umschaltbar zwischen breit (mit Beschriftung)
+ * Schwebende Seitenleiste ab Desktop-Breite, umschaltbar zwischen breit (mit Beschriftung)
  * und schmal (nur Icons). Die Wahl steht im Cookie, damit der Server gleich richtig rendert.
  * In schmalen Fenstern ist sie automatisch schmal; der Schalter klappt sie dann nur vorübergehend auf.
  */
@@ -54,7 +54,8 @@ export default function DesktopSidebar({ initialCollapsed, name, email, version,
     <>
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-30 hidden flex-col gap-5 overflow-y-auto overflow-x-hidden border-r bg-card py-4 transition-[width] duration-200 lg:flex',
+          // schwebend: mit Abstand zum Fensterrand, abgerundet und mit Schatten
+          'fixed inset-y-3 left-3 z-30 hidden flex-col gap-5 overflow-y-auto overflow-x-hidden rounded-xl border bg-card py-4 shadow-[0_12px_32px_-12px_rgba(0,0,0,0.7)] transition-[width] duration-200 lg:flex',
           collapsed ? 'w-16 px-2' : 'w-60 px-3',
         )}
       >
@@ -107,7 +108,7 @@ export default function DesktopSidebar({ initialCollapsed, name, email, version,
           </div>
         </div>
       </aside>
-      <div className={cn('flex min-h-screen flex-col transition-[padding] duration-200', collapsed ? 'lg:pl-16' : 'lg:pl-60')}>
+      <div className={cn('flex min-h-screen flex-col transition-[padding] duration-200', collapsed ? 'lg:pl-19' : 'lg:pl-63')}>
         {children}
       </div>
     </>

@@ -39,8 +39,8 @@ export default function StickyHeader({ children, className }: { children: ReactN
         ref={kopf}
         data-stuck={stuck}
         className={cn(
-          // mt-6: Abstand nach dem Sentinel wie im space-y-6 der Seite (Tailwind 4 setzt ihn sonst nicht)
-          'sticky-kopf z-30 mt-6 space-y-4 bg-background',
+          // lg:-mt-3 gleicht das lg:py-3 aus: Titel steht so hoch wie auf Seiten ohne festen Kopf
+          'sticky-kopf z-30 space-y-4 bg-background lg:-mt-3',
           'lg:sticky lg:top-0 lg:-mx-10 lg:border-b lg:border-transparent lg:px-10 lg:py-3 lg:transition-colors',
           'lg:data-[stuck=true]:border-border lg:data-[stuck=true]:shadow-[0_8px_16px_-12px_rgba(0,0,0,0.6)]',
           className,

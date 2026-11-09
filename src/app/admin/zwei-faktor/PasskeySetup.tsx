@@ -7,7 +7,7 @@ import { createBrowserSupabase } from '@/lib/supabase/client'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
-import { passkeyErrorText } from './totp'
+import { passkeyErrorText, passkeyRelyingParty } from './totp'
 
 /** Passkey (Touch ID, Face ID) als zweiten Faktor einrichten. */
 export default function PasskeySetup({ mode, onDone, onCancel }: { mode: 'einrichten' | 'hinzufuegen'; onDone?: () => void; onCancel?: () => void }) {
@@ -25,7 +25,7 @@ export default function PasskeySetup({ mode, onDone, onCancel }: { mode: 'einric
     for (const f of list?.all ?? []) {
       if (f.status === 'unverified') await supabase.auth.mfa.unenroll({ factorId: f.id })
     }
-    const { error } = await supabase.auth.mfa.webauthn.register({ friendlyName: name.trim() })
+    const { error } = await supabase.auth.mfa.webauthn.register({ friendlyName: name.trim(), webauthn: passkeyRelyingParty() })
     setBusy(false)
     if (error) { setError(passkeyErrorText(error)); return }
     toast.success(`${name.trim()} eingerichtet`)

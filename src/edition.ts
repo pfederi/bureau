@@ -10,7 +10,7 @@ export type Edition = {
   favicon: string
   /** Fester Name auf der Kundenseite, null = Absender aus den Einstellungen */
   portalName: string | null
-  /** Eigene Domain (Passkey-Hinweis, Fallback für APP_URL), null = keine feste Domain */
+  /** Eigene Domain (Passkeys gelten auch auf Subdomains, Fallback für APP_URL), null = keine feste Domain */
   domain: string | null
   htmlLang: 'de' | 'en'
   website: boolean

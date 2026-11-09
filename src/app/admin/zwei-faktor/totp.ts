@@ -1,4 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { edition } from '@/edition'
+import { passkeyRpId } from '@/lib/adminHost'
 
 /**
  * Prüft einen Code gegen alle eingerichteten Geräte (Faktoren) und hebt die
@@ -20,6 +22,12 @@ export async function factorKinds(supabase: SupabaseClient): Promise<{ passkey: 
   return { passkey: (data?.webauthn?.length ?? 0) > 0, totp: (data?.totp?.length ?? 0) > 0 }
 }
 
+/** Passkeys der Hauptdomain auch auf Subdomains (z. B. eigene Admin-Adresse) gelten lassen. */
+export function passkeyRelyingParty(): { rpId?: string; rpOrigins?: string[] } {
+  const rpId = passkeyRpId(window.location.hostname, edition.domain)
+  return rpId ? { rpId, rpOrigins: [window.location.origin] } : {}
+}
+
 /**
  * Bestätigung mit Passkey (Touch ID, Face ID, Sicherheitsschlüssel). Mehrere Passkeys
  * (z. B. Mac und iPhone) werden der Reihe nach versucht.
@@ -27,7 +35,7 @@ export async function factorKinds(supabase: SupabaseClient): Promise<{ passkey: 
 export async function verifyPasskey(supabase: SupabaseClient): Promise<boolean> {
   const { data } = await supabase.auth.mfa.listFactors()
   for (const factor of data?.webauthn ?? []) {
-    const { error } = await supabase.auth.mfa.webauthn.authenticate({ factorId: factor.id })
+    const { error } = await supabase.auth.mfa.webauthn.authenticate({ factorId: factor.id, webauthn: passkeyRelyingParty() })
     if (!error) return true
   }
   return false
