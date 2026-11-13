@@ -13,8 +13,9 @@ import PortalLinkDialog from './PortalLinkDialog'
 import TimeReportDialog, { type ReportMonth } from './TimeReportDialog'
 
 /** Bearbeiten, Löschen, Stundenrapport und Kundenlink direkt im Kunden-Dashboard. */
-export default function CustomerHeaderActions({ customer, reportMonths, defaultReportMonth, sentReports }: {
+export default function CustomerHeaderActions({ customer, reportMonths, defaultReportMonth, sentReports, standardAnsatz }: {
   customer: Customer
+  standardAnsatz: number
   reportMonths: ReportMonth[]
   defaultReportMonth: string | null
   sentReports: SentTimeReport[]
@@ -54,7 +55,7 @@ export default function CustomerHeaderActions({ customer, reportMonths, defaultR
         open={reportOpen} onOpenChange={setReportOpen}
       />
       <PortalLinkDialog customer={customer} open={portalOpen} onOpenChange={setPortalOpen} />
-      <CustomerFormDialog open={editOpen} editing={editOpen ? customer : null} onClose={() => setEditOpen(false)} />
+      <CustomerFormDialog open={editOpen} editing={editOpen ? customer : null} onClose={() => setEditOpen(false)} standardAnsatz={standardAnsatz} />
       <CustomerDeleteDialog
         target={deleteOpen ? customer : null}
         onClose={() => setDeleteOpen(false)}

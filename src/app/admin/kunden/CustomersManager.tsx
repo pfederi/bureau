@@ -14,7 +14,7 @@ import { hasHosting } from '@/lib/invoices/hosting'
 import { formatChf } from '@/lib/invoices/stats'
 import StickyHeader from '../StickyHeader'
 
-export function CustomersManager({ customers }: { customers: Customer[] }) {
+export function CustomersManager({ customers, standardAnsatz }: { customers: Customer[]; standardAnsatz: number }) {
   const [editing, setEditing] = useState<Customer | null>(null)
   const [formOpen, setFormOpen] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<Customer | null>(null)
@@ -126,7 +126,7 @@ export function CustomersManager({ customers }: { customers: Customer[] }) {
         </CardContent>
       </Card>
 
-      <CustomerFormDialog open={formOpen} editing={editing} onClose={closeForm} />
+      <CustomerFormDialog open={formOpen} editing={editing} onClose={closeForm} standardAnsatz={standardAnsatz} />
       <CustomerDeleteDialog
         target={deleteTarget}
         onClose={() => setDeleteTarget(null)}

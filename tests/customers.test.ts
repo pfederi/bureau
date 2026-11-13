@@ -12,6 +12,15 @@ describe('parseCustomerForm', () => {
     expect(parsed.firma_oder_name).toBe('Muster AG')
     expect(parsed.land).toBe('Schweiz')
   })
+  it('liest den Ansatz, leer = Standard (null)', () => {
+    const fd = new FormData()
+    fd.set('firma_oder_name', 'Muster AG')
+    expect(parseCustomerForm(fd).stundensatz).toBeNull()
+    fd.set('stundensatz', '135.5')
+    expect(parseCustomerForm(fd).stundensatz).toBe(135.5)
+    fd.set('stundensatz', '0')
+    expect(() => parseCustomerForm(fd)).toThrow()
+  })
   it('throws when name missing', () => {
     expect(() => parseCustomerForm(new FormData())).toThrow()
   })

@@ -12,7 +12,7 @@ const settings: Settings = {
 const customer: Customer = {
   id: 'c', kundennummer: 42, firma_oder_name: 'Muster AG', adresse: 'Beispielstrasse 5',
   plz: '3000', ort: 'Bern', land: 'Schweiz', email: 'x@example.ch', ansprechperson: null, gruss: 'Freundliche Grüsse',
-  hosting_text: null, hosting_preis_monat: null, hosting_ab: null, hosting_bis: null, stunden_budget: null, budget_zeitraum: null,
+  hosting_text: null, hosting_preis_monat: null, hosting_ab: null, hosting_bis: null, stunden_budget: null, budget_zeitraum: null, stundensatz: null,
 }
 const invoice: Invoice = {
   id: 'i', rechnungsnummer: 'RE-2025-JAN-15-0007', customer_id: 'c', typ: 'pauschal',

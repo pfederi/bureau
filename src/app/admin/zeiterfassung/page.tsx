@@ -1,6 +1,8 @@
 import { listTimeEntries, listProjectNames, type TimeEntryStatusFilter } from '@/lib/db/timeEntries'
 import { listCustomers } from '@/lib/db/customers'
 import { getSettings } from '@/lib/db/settings'
+import { listProjectRates } from '@/lib/db/rates'
+import { ansaetzeAus } from '@/lib/timeEntries/rates'
 import TimeEntryForm, { DuplicateTimeEntryButton } from './TimeEntryForm'
 import TimeEntryActions from './TimeEntryActions'
 import TimeEntryFilterBar from './TimeEntryFilterBar'
@@ -28,12 +30,14 @@ export default async function ZeiterfassungPage(
   const jahr = searchParams.jahr === 'alle'
     ? ''
     : searchParams.jahr || (status === 'offen' ? '' : String(new Date().getFullYear()))
-  const [customers, settings, entries, projekte] = await Promise.all([
+  const [customers, settings, entries, projekte, projektAnsaetze] = await Promise.all([
     listCustomers(),
     getSettings(),
     listTimeEntries({ status, customerId: kunde || undefined, jahr: jahr || undefined }),
     listProjectNames(),
+    listProjectRates().catch(() => []),
   ])
+  const ansaetze = ansaetzeAus(settings.standard_stundensatz, customers, projektAnsaetze)
   const today = new Date().toISOString().slice(0, 10)
 
   return (
@@ -44,7 +48,7 @@ export default async function ZeiterfassungPage(
             <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Zeiterfassung</h1>
             <p className="text-sm text-muted-foreground">Arbeitszeiten erfassen und für Rechnungen nutzen.</p>
           </div>
-          <TimeEntryForm customers={customers} defaultRate={settings.standard_stundensatz} today={today} defaultCustomerId={kunde} />
+          <TimeEntryForm customers={customers} ansaetze={ansaetze} today={today} defaultCustomerId={kunde} />
         </div>
 
         <TimeEntryFilterBar status={status} customers={customers} customerId={kunde} jahr={jahr} />
@@ -79,7 +83,7 @@ export default async function ZeiterfassungPage(
                   <TableCell className="hidden sm:table-cell">{e.billed ? <Badge variant="secondary">verrechnet</Badge> : <Badge>offen</Badge>}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1">
-                      <DuplicateTimeEntryButton entry={e} customers={customers} today={today} />
+                      <DuplicateTimeEntryButton entry={e} customers={customers} ansaetze={ansaetze} today={today} />
                       {/* Verrechnete Einträge gehören zu einer Rechnung und bleiben unveränderbar. */}
                       {e.billed ? <span className="w-9" aria-hidden /> : <TimeEntryActions entry={e} customers={customers} />}
                     </div>

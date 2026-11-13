@@ -12,7 +12,7 @@ describe('backupTables', () => {
   })
   it('richtet sich nach der übergebenen Edition', () => {
     const ohne = backupTables({ ...edition, website: false, material: false })
-    expect(ohne).toEqual(['customers', 'invoices', 'invoice_items', 'time_entries', 'quotes', 'quote_items', 'expenses', 'settings'])
+    expect(ohne).toEqual(['customers', 'invoices', 'invoice_items', 'time_entries', 'quotes', 'quote_items', 'expenses', 'settings', 'customer_guthaben', 'project_rates'])
     const mit = backupTables({ ...edition, website: true, material: true })
     expect(mit.includes('projects')).toBe(true)
     // Material-Tabellen kommen aus dem Modul (in Bureau ein leerer Stub)

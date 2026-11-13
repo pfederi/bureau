@@ -48,7 +48,8 @@ Der Admin-Bereich verwaltet deine Kunden, Zeiten, Offerten, Rechnungen und Ausga
 
 ### Einträge erfassen
 - **Neuer Eintrag** öffnet einen Dialog mit Datum, Kunde, **Projekt** (optional, mit Vorschlägen aus den bisherigen Projekten), Beschreibung, Stunden und Stundensatz. Ist oben ein Kunde gefiltert, ist er schon ausgewählt.
-- Das **Kopier-Symbol** in einer Zeile legt einen neuen Eintrag als Kopie mit heutigem Datum an, praktisch für wiederkehrende Arbeiten.
+- Wählst du Kunde und Projekt, setzt die App den passenden **Stundensatz** ein: den Ansatz des Projekts, sonst den des Kunden, sonst den Standard aus den Einstellungen. Hast du den Satz im Dialog schon geändert, bleibt er stehen. Weicht er bei einem Projekt vom Vorschlag ab, speicherst du ihn mit **Als Ansatz für dieses Projekt merken** für künftige Einträge.
+- Das **Kopier-Symbol** in einer Zeile legt einen neuen Eintrag als Kopie mit heutigem Datum an, praktisch für wiederkehrende Arbeiten. Der kopierte Stundensatz bleibt dabei stehen.
 - Über das **„…“-Menü** bearbeitest oder löschst du offene Einträge. Verrechnete Einträge gehören zu einer Rechnung und bleiben unverändert.
 
 ### Filtern
@@ -62,13 +63,14 @@ Der Admin-Bereich verwaltet deine Kunden, Zeiten, Offerten, Rechnungen und Ausga
 - Die **Adresse** darf mehrere Zeilen haben, zum Beispiel Abteilung, z. H. oder Kostenstelle. Die Strasse gehört in die letzte Zeile, sie steht auch im QR-Zahlteil.
 - **Hosting:** Text, Preis pro Monat und aktiver Zeitraum. Daraus entsteht die Hosting-Jahresposition. Verrechnet wird Hosting ab 2026, frühere Jahre gelten als abgegolten.
 - **Stundenbudget:** Stunden pro Monat oder Jahr. Das Dashboard warnt ab 80 % und bei Überschreitung.
+- **Ansatz (Fr.):** Stundensatz dieses Kunden als Vorschlag für neue Zeiteinträge. Leer = Standard aus den Einstellungen. Änderst du ihn und gibt es offene Einträge mit dem bisherigen Satz, fragt die App, ob sie mitziehen sollen. Einträge, deren Satz du einzeln anders gesetzt hast, und verrechnete Einträge bleiben, wie sie sind.
 - Bearbeiten und Löschen stecken im „…“-Menü jeder Zeile.
 
 ### Kunden-Dashboard
 - Ein Klick auf eine Kundenzeile (oder auf **Konto**) öffnet das Dashboard des Kunden mit Verdienst, offenem Betrag, Stundenbudget und allen Rechnungen.
 - **Guthaben** aus Überzahlungen erfasst du mit **Überzahlung erfassen** in der Karte Rechnungen; die Karte **Guthaben** zeigt Guthaben und Anrechnungen (siehe „Überzahlung und Guthaben“).
 - Die Rechnungsliste zeigt auch **Entwürfe** (Badge „Entwurf“). Zum offenen Betrag zählen sie erst, wenn du sie versendest; im Kundenlink erscheinen sie ebenfalls erst dann.
-- **Projekte** zeigt pro Projekt die Stunden, den verrechneten Betrag nach Rabatt und den effektiven Ansatz pro Stunde.
+- **Projekte** zeigt pro Projekt die Stunden, den verrechneten Betrag nach Rabatt und den effektiven Ansatz pro Stunde. Die Spalte **Ansatz** ist der Vorschlag für neue Einträge, mit «(Kunde)» oder «(Standard)», wenn das Projekt keinen eigenen hat. Der **Stift** ändert ihn; leer = Ansatz des Kunden. Auch hier fragt die App, ob offene Einträge mitziehen sollen.
 - **Offene Zeiteinträge** steht direkt unter dem Stundenbudget und listet alle noch nicht verrechneten Einträge mit Stunden und Betrag (Stunden × Ansatz), oben die Summe. **In der Zeiterfassung →** öffnet sie dort zum Bearbeiten. Ohne offene Einträge fehlt die Karte.
 - **Verrechnete Stunden** (zugeklappt, ein Klick öffnet sie) listet die verrechneten Einträge mit Rechnungsnummer; ein Klick darauf öffnet die PDF-Vorschau. Einträge auf einem Entwurf sind mit „(Entwurf)“ markiert. Auf der Kundenseite sieht der Kunde weiterhin eine Karte **Stunden** mit offenen und verrechneten Einträgen.
 - Von dort aus erstellst du direkt eine **Offerte** oder **Rechnung**, der Kunde ist schon ausgewählt. Über das **„…“-Menü** daneben bearbeitest oder löschst du den Kunden.
@@ -151,6 +153,14 @@ Hat ein Kunde zu viel bezahlt, musst du nichts zurücküberweisen: Der Betrag wi
 - **Rücklage für AHV und Steuern** schlüsselt auf: AHV/IV/EO nach den Ansätzen 2026 (sinkende Skala, bei angestelltem Hauptberuf ab 5.371 %), Verwaltungskosten der Ausgleichskasse und Einkommenssteuer zum Grenzsteuersatz aus den Einstellungen. Eine Schätzung, keine Veranlagung.
 - **PDF** legst du der Steuererklärung bei (Hilfsblatt A), die **CSV** öffnet sich direkt in Excel, zum Beispiel für die Treuhänderin.
 - **Steuerpaket** lädt alles zum Jahr als ZIP: Jahresabschluss als PDF und CSV, die Belege der Ausgaben (benannt nach Datum, Lieferant und Betrag), die im Jahr bezahlten Rechnungen. Die Datei LIESMICH.txt fasst zusammen und listet Ausgaben ohne Beleg.
+
+## Auswertung
+- **Auswertung** (unter Finanzen) zeigt pro Kunde den **Umsatz** des gewählten Jahres: versendete und bezahlte Rechnungen nach Rechnungsdatum, ohne Entwürfe und Stornos. Oben wählst du das Jahr oder **Alle Jahre**.
+- **Anteil** ist der Teil am Umsatz aller Kunden, **davon offen** der noch nicht bezahlte Betrag (ohne Guthaben und über das Kundenkonto Gedecktes).
+- **Std.** und **Ansatz eff.** beziehen sich auf die Zeiteinträge dieser Rechnungen: verrechneter Betrag nach Rabatt durch die Stunden. Bei reinen Pauschalrechnungen steht «–».
+- **Ø Zahlung** sind die durchschnittlichen Tage vom Versand (sonst Rechnungsdatum) bis zur Zahlung. Über 30 Tage steht «spät».
+- Ein Klick auf einen Spaltenkopf sortiert danach, ein zweiter dreht die Reihenfolge. Kunden ohne Wert in der Spalte stehen unten. Ein Klick auf den Namen öffnet das Kunden-Dashboard.
+- Macht ein Kunde mehr als die Hälfte des Umsatzes aus, weist ein Hinweis über der Tabelle darauf hin.
 
 ## Suche und Tastatur
 - Die **Suche** oben in der Seitenleiste (auf dem Handy oben rechts) findet Kunden, Rechnungen, Offerten und Zeiteinträge. Öffnen mit ⌘K bzw. Ctrl+K oder mit `/`.

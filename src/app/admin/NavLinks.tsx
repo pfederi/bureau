@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  LayoutDashboard, Receipt, Users, Clock, Settings, LayoutGrid, FileText, Coins, BookOpen, ChevronRight, type LucideIcon,
+  LayoutDashboard, Receipt, Users, Clock, Settings, LayoutGrid, FileText, Coins, ChartColumn, BookOpen, ChevronRight, type LucideIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { edition } from '@/edition'
@@ -32,6 +32,7 @@ const GROUPS: { title?: string; items: Item[] }[] = [
       { href: '/admin/rechnungen', label: 'Rechnungen', icon: Receipt },
       { href: '/admin/offerten', label: 'Offerten', icon: FileText },
       { href: '/admin/ausgaben', label: 'Ausgaben', icon: Coins },
+      { href: '/admin/auswertung', label: 'Auswertung', icon: ChartColumn },
     ],
   },
   ...(edition.website ? [{ title: 'Website', items: [{ href: '/admin/projekte', label: 'Projekte', icon: LayoutGrid }] }] : []),

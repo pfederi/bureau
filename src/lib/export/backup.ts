@@ -13,6 +13,7 @@ export function backupTables(ed: Edition = edition): readonly string[] {
   return [
     'customers', 'invoices', 'invoice_items', 'time_entries', ...(ed.material ? MATERIAL_TABLES : []),
     'quotes', 'quote_items', 'expenses', 'settings', ...(ed.website ? ['projects'] : []),
+    'customer_guthaben', 'project_rates',
   ]
 }
 

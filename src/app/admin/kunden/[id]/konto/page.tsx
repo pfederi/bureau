@@ -2,6 +2,9 @@ import { notFound } from 'next/navigation'
 import { ArrowLeft, FilePlus2, FileText } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { getCustomer } from '@/lib/db/customers'
+import { getSettings } from '@/lib/db/settings'
+import { listProjectRates } from '@/lib/db/rates'
+import { ansaetzeAus } from '@/lib/timeEntries/rates'
 import { listInvoices } from '@/lib/db/invoices'
 import { listCredits, MaterialSection } from '@/modules/material'
 import { computeAccount, computeCustomerOwed, coveredAmounts } from '@/lib/invoices/account'
@@ -39,9 +42,10 @@ export default async function KontoPage(props: { params: Promise<{ id: string }>
   const params = await props.params
   const customer = await getCustomer(params.id)
   if (!customer) notFound()
-  const [invoices, credits, timeEntries, sentReports, sites, guthaben] = await Promise.all([
+  const [invoices, credits, timeEntries, sentReports, sites, guthaben, settings, projektAnsaetze] = await Promise.all([
     listInvoices({ customerId: customer.id }), listCredits(customer.id), listTimeEntries({ status: 'alle', customerId: customer.id }),
     listSentTimeReports(customer.id).catch(() => []), listSites(customer.id).catch(() => []), listGuthaben(customer.id),
+    getSettings(), listProjectRates(customer.id).catch(() => []),
   ])
   const guthabenFrei = guthabenSaldo(guthaben, invoices)
   const monate = reportMonths(timeEntries)
@@ -49,6 +53,7 @@ export default async function KontoPage(props: { params: Promise<{ id: string }>
   // Projekt-Auswertung nur, wenn mindestens ein Eintrag einem Projekt zugeordnet ist
   const projekte = timeEntries.some(e => e.projekt) ? projectStats(timeEntries, invoices) : []
   const stunden = hoursOverview(timeEntries, invoices)
+  const ansaetze = ansaetzeAus(settings.standard_stundensatz, [customer], projektAnsaetze)
 
   const jahr = new Date().getFullYear()
   const today = new Date().toISOString().slice(0, 10)
@@ -83,7 +88,7 @@ export default async function KontoPage(props: { params: Promise<{ id: string }>
                 <a href={`/admin/rechnungen/neu?kunde=${customer.id}`}><FilePlus2 className="h-4 w-4 mr-1.5" />Rechnung erstellen</a>
               </Button>
               <CustomerHeaderActions
-                customer={customer} reportMonths={monate} defaultReportMonth={defaultReportMonth(monate, new Date())} sentReports={sentReports}
+                customer={customer} reportMonths={monate} defaultReportMonth={defaultReportMonth(monate, new Date())} sentReports={sentReports} standardAnsatz={settings.standard_stundensatz}
               />
             </div>
           </div>
@@ -215,7 +220,7 @@ export default async function KontoPage(props: { params: Promise<{ id: string }>
         )}
       />
 
-      {projekte.length > 0 && <ProjectsCard rows={projekte} />}
+      {projekte.length > 0 && <ProjectsCard rows={projekte} customerId={customer.id} ansaetze={ansaetze} />}
 
       <SitesCard customerId={customer.id} sites={sites} />
 

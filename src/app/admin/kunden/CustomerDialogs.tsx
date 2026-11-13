@@ -1,4 +1,5 @@
 'use client'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { UserPlus, Save, X } from 'lucide-react'
@@ -17,13 +18,19 @@ import {
   AlertDialogFooter, AlertDialogTitle, AlertDialogDescription, AlertDialogAction, AlertDialogCancel,
 } from '@/components/ui/alert-dialog'
 import type { Customer } from '@/lib/types'
+import { formatBetrag } from '@/lib/invoices/stats'
+import type { OffeneFrage } from '@/lib/timeEntries/rates'
+import { OffeneAnpassenDialog } from './OffeneAnpassenDialog'
 
 // Gemeinsam für Kundenliste und Kunden-Dashboard.
 
 /** Kunde anlegen (editing = null) oder bearbeiten. */
-export function CustomerFormDialog({ open, editing, onClose }: { open: boolean; editing: Customer | null; onClose: () => void }) {
+export function CustomerFormDialog({ open, editing, onClose, standardAnsatz }: { open: boolean; editing: Customer | null; onClose: () => void; standardAnsatz: number }) {
   const router = useRouter()
+  // Rückfrage nach geändertem Ansatz; bleibt offen, auch wenn der Dialog schon zu ist
+  const [frage, setFrage] = useState<OffeneFrage | null>(null)
   return (
+    <>
       <Dialog open={open} onOpenChange={o => { if (!o) onClose() }}>
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
           <DialogHeader>
@@ -35,9 +42,10 @@ export function CustomerFormDialog({ open, editing, onClose }: { open: boolean; 
           <form
             key={editing?.id ?? 'new'}
             action={async (fd) => {
-              const r = editing ? await editCustomer(editing.id, fd) : await addCustomer(fd)
+              const r: { ok: boolean; error?: string; frage?: OffeneFrage } = editing ? await editCustomer(editing.id, fd) : await addCustomer(fd)
               if (r.ok) {
                 toast.success(editing ? 'Kunde gespeichert' : 'Kunde angelegt')
+                if (r.frage) setFrage(r.frage)
                 onClose()
                 router.refresh()
               } else {
@@ -81,7 +89,7 @@ export function CustomerFormDialog({ open, editing, onClose }: { open: boolean; 
               <legend className="sr-only">Stundenbudget</legend>
               <div className="md:col-span-2">
                 <p className="text-sm font-medium">Stundenbudget</p>
-                <p className="text-sm text-muted-foreground">Warnung im Dashboard ab 80 % und bei Überschreitung. Leer lassen, wenn kein Budget.</p>
+                <p className="text-sm text-muted-foreground">Warnung im Dashboard ab 80 % und bei Überschreitung. Leer lassen, wenn kein Budget. Der Ansatz ist der Vorschlag für neue Zeiteinträge.</p>
               </div>
               <div className="space-y-1.5"><Label htmlFor="stunden_budget">Stunden</Label><DecimalInput id="stunden_budget" name="stunden_budget" defaultValue={editing?.stunden_budget ?? ''} /></div>
               <div className="space-y-1.5"><Label htmlFor="budget_zeitraum">Pro</Label>
@@ -92,6 +100,11 @@ export function CustomerFormDialog({ open, editing, onClose }: { open: boolean; 
                     <SelectItem value="jahr">Jahr</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="stundensatz">Ansatz (Fr.)</Label>
+                <DecimalInput id="stundensatz" name="stundensatz" aria-describedby="stundensatz-hinweis" placeholder={`Standard ${formatBetrag(standardAnsatz)}`} defaultValue={editing?.stundensatz ?? ''} />
+                <p id="stundensatz-hinweis" className="text-xs text-muted-foreground">Leer = Standard aus den Einstellungen.</p>
               </div>
             </fieldset>
             <div className="md:col-span-2 flex justify-end gap-2">
@@ -105,6 +118,8 @@ export function CustomerFormDialog({ open, editing, onClose }: { open: boolean; 
           </form>
         </DialogContent>
       </Dialog>
+      <OffeneAnpassenDialog frage={frage} onClose={() => setFrage(null)} />
+    </>
   )
 }
 

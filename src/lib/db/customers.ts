@@ -23,6 +23,7 @@ const customerSchema = z.object({
   hosting_bis: z.preprocess(monthToDate, z.string().nullable()).default(null),
   stunden_budget: z.preprocess(emptyToNull, z.coerce.number().positive().nullable()).default(null),
   budget_zeitraum: z.preprocess(emptyToNull, z.enum(['monat', 'jahr']).nullable()).default(null),
+  stundensatz: z.preprocess(emptyToNull, z.coerce.number().positive().nullable()).default(null),
 }).transform(c => ({
   ...c,
   // Zeitraum nur zusammen mit einem Budget speichern; Standard ist pro Monat.

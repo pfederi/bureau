@@ -37,6 +37,8 @@ export type Customer = {
   /** Stundenbudget pro Zeitraum (null = kein Budget) */
   stunden_budget: number | null
   budget_zeitraum: 'monat' | 'jahr' | null
+  /** Ansatz pro Stunde, null = Standard aus den Einstellungen */
+  stundensatz: number | null
   /** Kundenlink (private Seite unter /kunde/…), null = keiner */
   portal_token?: string | null
   portal_erstellt_am?: string | null
@@ -96,6 +98,14 @@ export type TimeEntry = {
   invoice_id: string | null
   /** Projekt für die Auswertung, z. B. «Relaunch 2026» */
   projekt?: string | null
+}
+
+/** Ansatz für ein Projekt eines Kunden (Projektname wie in time_entries.projekt) */
+export type ProjectRate = {
+  id: string
+  customer_id: string
+  projekt: string
+  stundensatz: number
 }
 
 export type CreditType = 'material' | 'zahlung'
