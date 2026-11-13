@@ -72,6 +72,7 @@ Kopiere `.env.example` nach `.env.local` und fülle die Werte aus.
 | `APP_URL` | ja | öffentliche Adresse der App (Links in Mails, Kundenportal) |
 | `CRON_SECRET` | ja, für Cron-Jobs | zufälliger Wert, mindestens 16 Zeichen |
 | `RESEND_API_KEY` | optional | Mailversand über Resend |
+| `RESEND_WEBHOOK_SECRET` | optional | Belege per Mail weiterleiten (Signing Secret des Resend-Webhooks, siehe Abschnitt 7) |
 | `INVOICE_FROM_EMAIL` | optional | überschreibt den Absender aus den Einstellungen, Form `Vorname Name <rechnung@example.ch>` |
 | `GROQ_API_KEY` | optional | automatische Belegerkennung |
 | `GROQ_MODEL` | optional | Modell für die Belegerkennung |
@@ -141,6 +142,14 @@ Ohne `RESEND_API_KEY` laufen beide Aufgaben trotzdem, verschicken aber keine Mai
 ## 7. Einstellungen
 
 Nach dem ersten Login unter «Einstellungen» ausfüllen: Absender, Adresse, IBAN (QR-IBAN oder normale IBAN), Stundensatz, MWST-Hinweis und die nächste Rechnungsnummer.
+
+### Belege per Mail (optional)
+
+1. **Resend → Receiving:** Empfang aktivieren. Die vergebene Adresse `…@<id>.resend.app` notieren (oder eine eigene Subdomain einrichten: MX-Eintrag gemäss Resend-Dashboard beim DNS-Anbieter).
+2. **Resend → Webhooks → Add Webhook:** Ereignis `email.received`, Adresse `https://<deine-app>/api/inbound/belege`. Das **Signing Secret** (`whsec_…`) kopieren.
+3. Umgebungsvariable `RESEND_WEBHOOK_SECRET` mit diesem Wert setzen (nur zur Laufzeit nötig) und neu deployen. `RESEND_API_KEY` muss ebenfalls gesetzt sein.
+4. In den **Einstellungen → Belege per Mail** weitere erlaubte Absender eintragen (die Absender-Adresse ist immer erlaubt).
+5. Testen: einen Beleg von einer erlaubten Adresse weiterleiten; nach wenigen Sekunden erscheint er unter **Ausgaben → Neue Belege per Mail**. Mails von anderen Absendern und Anfragen ohne gültige Signatur werden verworfen.
 
 ## 8. Updates
 

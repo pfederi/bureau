@@ -4,6 +4,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Input } from '@/components/ui/input'
 import { DecimalInput } from '@/components/ui/decimal-input'
 import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Archive } from 'lucide-react'
 import { createServerSupabase } from '@/lib/supabase/server'
@@ -54,6 +55,24 @@ export default async function EinstellungenPage() {
                   : <Input id={f.name} name={f.name} type={f.type ?? 'text'} defaultValue={String((s as any)[f.name] ?? '')} />}
               </div>
             ))}
+          </SettingsForm>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Belege per Mail</CardTitle>
+          <CardDescription>
+            Leite Belege an die Empfangsadresse aus Resend weiter; sie erscheinen unter Ausgaben zum Prüfen.
+            {process.env.RESEND_API_KEY && process.env.RESEND_WEBHOOK_SECRET ? ' Empfang ist eingerichtet.' : ' Noch nicht eingerichtet (RESEND_API_KEY und RESEND_WEBHOOK_SECRET, siehe Anleitung).'}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <SettingsForm className="space-y-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="beleg_absender">Weitere erlaubte Absender</Label>
+              <Textarea id="beleg_absender" name="beleg_absender" rows={3} aria-describedby="beleg_absender-hinweis" defaultValue={(s.beleg_absender ?? []).join('\n')} />
+              <p id="beleg_absender-hinweis" className="text-xs text-muted-foreground">Eine Adresse pro Zeile. Mails von {s.absender_email} sind immer erlaubt, alle anderen werden verworfen.</p>
+            </div>
           </SettingsForm>
         </CardContent>
       </Card>

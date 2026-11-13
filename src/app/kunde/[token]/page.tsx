@@ -19,6 +19,8 @@ import BodyClass from '@/app/admin/BodyClass'
 import HoursCard from '@/app/admin/HoursCard'
 import StickyHeader from '@/app/admin/StickyHeader'
 import PortalSitesCard from './PortalSitesCard'
+import PortalQuotesCard from './PortalQuotesCard'
+import { heuteZuerich } from '@/lib/portal/quotes'
 import GuthabenCard from '@/app/admin/GuthabenCard'
 import { angerechnet, guthabenSaldo, guthabenVerlauf, zuBezahlen } from '@/lib/invoices/guthaben'
 
@@ -42,7 +44,7 @@ export default async function KundenSeite(props: { params: Promise<{ token: stri
   const params = await props.params
   const data = await loadPortal(params.token)
   if (!data) notFound()
-  const { customer, invoices, credits, timeEntries, settings, sites, guthaben } = data
+  const { customer, invoices, credits, timeEntries, settings, sites, guthaben, quotes } = data
   const anbieter = portalAnbieter(edition.portalName, settings.absender_name)
 
   const offeneUndBezahlte = invoices.filter(i => !i.verrechnung_material && i.status !== 'storniert')
@@ -88,6 +90,8 @@ export default async function KundenSeite(props: { params: Promise<{ token: stri
             </div>
           </CardContent>
         </Card>
+
+        <PortalQuotesCard token={params.token} anrede={customer.anrede ?? 'sie'} heute={heuteZuerich()} quotes={quotes} />
 
         <PortalSitesCard sites={sites} />
 

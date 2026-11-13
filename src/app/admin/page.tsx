@@ -3,6 +3,7 @@ import { listCustomers } from '@/lib/db/customers'
 import { listCredits } from '@/modules/material'
 import { listTimeEntries } from '@/lib/db/timeEntries'
 import { listQuotes } from '@/lib/db/quotes'
+import { listBelegEingang } from '@/lib/db/belegEingang'
 import { listExpenses } from '@/lib/db/expenses'
 import { listSites } from '@/lib/db/sites'
 import { computeYearReport } from '@/lib/expenses/report'
@@ -161,9 +162,10 @@ function HoursCard({ jahr, total, rows, budgets, colors, className }: {
 }
 
 export default async function Dashboard() {
-  const [invoices, customers, credits, timeEntries, quotes, expenses, settings, sites] = await Promise.all([
+  const [invoices, customers, credits, timeEntries, quotes, expenses, settings, sites, belegEingang] = await Promise.all([
     listInvoices(), listCustomers(), listCredits(), listTimeEntries({ status: 'alle' }), listQuotes(), listExpenses(),
     getSettings().catch(() => null), listSites().catch(() => []),
+    listBelegEingang().catch(() => []),
   ])
   const jahr = new Date().getFullYear()
   const covered = coveredAmounts(invoices, credits)
@@ -175,7 +177,7 @@ export default async function Dashboard() {
   const colors = customerColors(customers.map(c => c.id))
   const openRows = openInvoiceRows(invoices, covered, new Date())
   const unbilled = unbilledHoursByCustomer(timeEntries)
-  const todos = computeTodos({ invoices, quotes, timeEntries, customers, sites, fehlendeBelege: findMissingRecurring(expenses, new Date(), settings?.belege_ausgeblendet ?? []), now: new Date() })
+  const todos = computeTodos({ invoices, quotes, timeEntries, customers, sites, belegEingang: belegEingang.length, fehlendeBelege: findMissingRecurring(expenses, new Date(), settings?.belege_ausgeblendet ?? []), now: new Date() })
   const jahre = Array.from({ length: jahr - FIRST_BUSINESS_YEAR + 1 }, (_, i) => FIRST_BUSINESS_YEAR + i)
   const jahresvergleich = jahre.map(j => {
     const r = computeYearReport(invoices, expenses, j)

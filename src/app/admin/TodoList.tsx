@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
-import { BellRing, CalendarClock, Clock, FilePen, FileText, Gauge, Globe, Server, type LucideIcon } from 'lucide-react'
+import { BellRing, CalendarClock, CircleCheck, Clock, FilePen, FileText, Gauge, Globe, Server, type LucideIcon } from 'lucide-react'
 import { formatChf } from '@/lib/invoices/stats'
 import { cn } from '@/lib/utils'
 import type { Todo, TodoArt } from '@/lib/dashboard/todos'
@@ -8,7 +8,7 @@ import RemindButton from './RemindButton'
 import AlarmPunkt from './AlarmPunkt'
 
 const ICON: Record<TodoArt, LucideIcon> = {
-  erinnern: BellRing, offerte: FileText, entwurf: FilePen, stunden: Clock, beleg: CalendarClock, hosting: Server, budget: Gauge, website: Globe,
+  erinnern: BellRing, offerte: FileText, angenommen: CircleCheck, entwurf: FilePen, stunden: Clock, beleg: CalendarClock, hosting: Server, budget: Gauge, website: Globe,
 }
 const DAUER = 300
 

@@ -15,7 +15,7 @@ Next.js 16 mit React 19 und Tailwind 4 (App Router, Server-Modus, Turbopack) mit
 - Animationen nur mit `motion-safe:` (Einstellung «Bewegung reduzieren»), kurz (≤ 300 ms, Balken ≤ 700 ms) und ohne Dauerschleife; eigene Keyframes als `--animate-*` im `@theme` in `globals.css`. Navigation per `router.push` über `useNavRouter()` (startet den Ladebalken).
 - Next 16: `params`, `searchParams` und `cookies()` sind asynchron (`await props.params`); die Login-Weiterleitung steht in `src/proxy.ts` (früher Middleware).
 - Neue Migrationen in `supabase/migrations/NNNN_name.sql`; neue Funktionen im `public`-Schema immer zusätzlich `revoke execute … from anon`; neue Tabellen mit RLS und Policy `has_admin_access()`, ohne Rechte für `anon`.
-- Öffentlich ohne Login nur: `/kunde/[token]` (Service-Key, immer auf den Kunden des Tokens beschränkt) und `/api/cron/*` (`CRON_SECRET`). Alles andere prüft `requireSession()`.
+- Öffentlich ohne Login nur: `/kunde/[token]` (Service-Key, immer auf den Kunden des Tokens beschränkt), `/api/cron/*` (`CRON_SECRET`) und `/api/inbound/*` (Webhook-Signatur, `RESEND_WEBHOOK_SECRET`). Alles andere prüft `requireSession()`.
 
 ## Vor jedem Commit
 1. Barrierefreiheit nach WCAG 2.2 AA prüfen: Beschriftungen für Felder und Icon-Knöpfe, Tastaturbedienung mit sichtbarem Fokus, Klickflächen ab 24 × 24 px, Status nie nur über Farbe, Seitentitel pro Seite, Meldungen über Toasts oder `aria-live`. Kontraste prüft `tests/a11yContrast.test.ts` automatisch.

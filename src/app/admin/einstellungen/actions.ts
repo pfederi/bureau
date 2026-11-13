@@ -10,6 +10,7 @@ const FELD: Record<string, string> = {
   absender_name: 'Absender Name', absender_adresse: 'Adresse', absender_plz_ort: 'PLZ / Ort', absender_land: 'Land',
   absender_tel: 'Telefon', absender_email: 'E-Mail', bank_name: 'Bank', iban: 'IBAN',
   standard_stundensatz: 'Standard-Stundensatz', mwst_hinweis: 'MWST-Hinweis', grenzsteuersatz: 'Grenzsteuersatz (0 bis 60 %)',
+  beleg_absender: 'Weitere erlaubte Absender',
 }
 
 export async function saveSettings(formData: FormData): Promise<Result> {

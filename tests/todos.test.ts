@@ -14,6 +14,19 @@ const run = (p: Partial<Parameters<typeof computeTodos>[0]>) =>
   computeTodos({ invoices: [], quotes: [], timeEntries: [], fehlendeBelege: [], now, ...p })
 
 describe('computeTodos', () => {
+  it('Belege per Mail im Eingang: ein Todo mit Anzahl', () => {
+    expect(run({ belegEingang: 2 })[0]).toMatchObject({ key: 'beleg-eingang', art: 'beleg', titel: '2 Belege per Mail zu prüfen', href: '/admin/ausgaben', dringend: false })
+    expect(run({ belegEingang: 1 })[0].titel).toBe('1 Beleg per Mail zu prüfen')
+    expect(run({ belegEingang: 0 })).toEqual([])
+  })
+  it('angenommene Offerte ohne Rechnung: Todo «In Rechnung umwandeln»', () => {
+    const t = run({ quotes: [quote({ status: 'angenommen', invoice_id: null, antwort_am: '2026-10-19T09:00:00Z', antwort_via: 'kundenlink' })] })
+    expect(t).toHaveLength(1)
+    expect(t[0]).toMatchObject({ art: 'angenommen', dringend: false, detail: 'In Rechnung umwandeln', tage: 2, betrag: 900 })
+    expect(run({ quotes: [quote({ status: 'angenommen', invoice_id: 'r1', antwort_via: 'kundenlink' })] })).toEqual([])
+    // im Admin von Hand angenommen (z. B. separat verrechnet): kein Dauer-Todo
+    expect(run({ quotes: [quote({ status: 'angenommen', invoice_id: null, antwort_via: null })] })).toEqual([])
+  })
   it('lists overdue invoices first, with a reminder action', () => {
     const [t] = run({ invoices: [inv({})] })
     expect(t).toMatchObject({ art: 'erinnern', dringend: true, titel: 'RE-1 · Muster AG', erinnern: { invoiceId: 'i1', email: 'kontakt@muster-ag.ch' } })

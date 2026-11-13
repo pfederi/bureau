@@ -13,3 +13,15 @@ describe('parseSettingsForm', () => {
     expect(parsed.absender_name).toBe('Anna Muster')
   })
 })
+
+describe('parseSettingsForm beleg_absender', () => {
+  it('eine Adresse pro Zeile, klein geschrieben, leere Zeilen weg', () => {
+    const fd = new FormData()
+    fd.set('beleg_absender', 'Handy@Example.ch\n\n  zweite@example.ch ')
+    expect(parseSettingsForm(fd).beleg_absender).toEqual(['handy@example.ch', 'zweite@example.ch'])
+    fd.set('beleg_absender', '')
+    expect(parseSettingsForm(fd).beleg_absender).toEqual([])
+    fd.set('beleg_absender', 'keine-adresse')
+    expect(() => parseSettingsForm(fd)).toThrow()
+  })
+})

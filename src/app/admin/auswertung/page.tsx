@@ -29,7 +29,7 @@ function Anteil({ z }: { z: Pick<KundenZeile, 'anteil'> }) {
       <span aria-hidden className="hidden h-1.5 w-16 overflow-hidden rounded-full bg-muted lg:block">
         <span className="block h-full rounded-full bg-primary" style={{ width: `${z.anteil}%` }} />
       </span>
-      {z.anteil} %
+      {z.anteil}{'\u00A0'}%
     </span>
   )
 }
@@ -59,6 +59,7 @@ export default async function AuswertungPage(props: { searchParams: Promise<Para
     <TableHead className={className} aria-sort={s === spalte ? (richtung === 'auf' ? 'ascending' : 'descending') : undefined}>
       <Link href={href(s)} className="inline-flex items-center gap-1 rounded-sm hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring">
         {children}
+        <span className="sr-only">, sortieren</span>
         {s === spalte && (richtung === 'auf' ? <ArrowUp className="h-3.5 w-3.5" aria-hidden /> : <ArrowDown className="h-3.5 w-3.5" aria-hidden />)}
       </Link>
     </TableHead>
@@ -77,7 +78,7 @@ export default async function AuswertungPage(props: { searchParams: Promise<Para
       {dominant && (
         <Card>
           <CardContent className="pt-4 text-sm sm:pt-6">
-            <strong className="font-medium">{dominant.kunde}</strong> macht {dominant.anteil} % deines {zeitraum} aus.
+            <strong className="font-medium">{dominant.kunde}</strong> macht {dominant.anteil}{'\u00A0'}% deines {zeitraum} aus.
           </CardContent>
         </Card>
       )}
@@ -123,9 +124,14 @@ export default async function AuswertungPage(props: { searchParams: Promise<Para
               </TableBody>
               <TableFooter>
                 <TableRow>
-                  <TableCell className="font-medium">Total</TableCell>
+                  <TableCell className="font-medium">
+                    Total
+                    <div className="mt-1 text-xs font-normal tabular-nums text-muted-foreground md:hidden">
+                      offen {formatBetrag(auswertung.total.offen)} · {formatStunden(auswertung.total.stunden)} Std. · Ansatz {auswertung.total.ansatzEffektiv !== null ? formatBetrag(auswertung.total.ansatzEffektiv) : '–'} · Zahlung <Zahlung tage={auswertung.total.zahlungTage} />
+                    </div>
+                  </TableCell>
                   <TableCell className="whitespace-nowrap text-right font-medium tabular-nums">{formatChf(auswertung.total.umsatz, { tabelle: true })}</TableCell>
-                  <TableCell className="text-right tabular-nums">100 %</TableCell>
+                  <TableCell className="text-right tabular-nums align-top md:align-middle">{auswertung.total.anteil}{'\u00A0'}%</TableCell>
                   <TableCell className="hidden whitespace-nowrap text-right tabular-nums md:table-cell">{formatChf(auswertung.total.offen, { tabelle: true })}</TableCell>
                   <TableCell className="hidden text-right tabular-nums md:table-cell">{formatStunden(auswertung.total.stunden)}</TableCell>
                   <TableCell className="hidden whitespace-nowrap text-right tabular-nums md:table-cell">{auswertung.total.ansatzEffektiv !== null ? formatBetrag(auswertung.total.ansatzEffektiv, { tabelle: true }) : '–'}</TableCell>

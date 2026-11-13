@@ -74,6 +74,15 @@ export function CustomerFormDialog({ open, editing, onClose, standardAnsatz }: {
               <Label htmlFor="gruss">Grussformel (auf der Rechnung)</Label>
               <Input id="gruss" name="gruss" list="gruss-optionen" defaultValue={editing?.gruss ?? 'Freundliche Grüsse'} placeholder="z. B. Freundliche Grüsse" />
             </div>
+            <div className="space-y-1.5"><Label htmlFor="anrede">Anrede im Kundenlink</Label>
+              <Select name="anrede" defaultValue={editing?.anrede ?? 'sie'}>
+                <SelectTrigger id="anrede"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="sie">Sie</SelectItem>
+                  <SelectItem value="du">Du</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             <fieldset className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 border-t pt-4">
               <legend className="sr-only">Hosting</legend>
               <div className="md:col-span-2">

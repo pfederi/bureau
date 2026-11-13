@@ -31,6 +31,7 @@ Der Admin-Bereich verwaltet deine Kunden, Zeiten, Offerten, Rechnungen und Ausga
 - **Datensicherung herunterladen** (Einstellungen) erstellt eine ZIP-Datei mit allen Daten als JSON und CSV, allen Belegen und den Rechnungen als PDF. Am besten einmal im Jahr zusammen mit den Steuerunterlagen ablegen.
 - Unter **Einstellungen** (unten in der Seitenleiste) Absender, Adresse, Bankverbindung, IBAN, Standard-Stundensatz und MWST-Hinweis erfassen.
 - Diese Angaben erscheinen auf jeder Rechnung und Offerte. An die Absender-Adresse geht beim Versand ausserdem eine Kopie jeder E-Mail.
+- **Belege per Mail:** Hier trägst du weitere erlaubte Absender ein (eine Adresse pro Zeile), zum Beispiel das Mailkonto auf deinem Handy. Die Karte zeigt auch, ob der Empfang eingerichtet ist.
 - Nach **Speichern** bestätigt ein Häkchen im Knopf. Ist ein Wert ungültig (z. B. Grenzsteuersatz über 60 %), nennt ein Hinweis das Feld; gespeichert wird dann nichts.
 
 ## Dashboard
@@ -60,6 +61,7 @@ Der Admin-Bereich verwaltet deine Kunden, Zeiten, Offerten, Rechnungen und Ausga
 
 ### Kunden verwalten
 - **Neuer Kunde** öffnet das Formular im Dialog: Adresse, E-Mail, Ansprechperson und Grussformel für die Rechnung.
+- **Anrede im Kundenlink:** Sie (Standard) oder Du – gilt für die Texte, mit denen der Kundenlink den Kunden anspricht, zum Beispiel beim Beantworten von Offerten.
 - Die **Adresse** darf mehrere Zeilen haben, zum Beispiel Abteilung, z. H. oder Kostenstelle. Die Strasse gehört in die letzte Zeile, sie steht auch im QR-Zahlteil.
 - **Hosting:** Text, Preis pro Monat und aktiver Zeitraum. Daraus entsteht die Hosting-Jahresposition. Verrechnet wird Hosting ab 2026, frühere Jahre gelten als abgegolten.
 - **Stundenbudget:** Stunden pro Monat oder Jahr. Das Dashboard warnt ab 80 % und bei Überschreitung.
@@ -87,6 +89,7 @@ Der Admin-Bereich verwaltet deine Kunden, Zeiten, Offerten, Rechnungen und Ausga
 - Hat der Kunde Guthaben (siehe „Überzahlung und Guthaben“), sieht er es beim offenen Betrag und in der Karte **Guthaben** mit allen Anrechnungen; bei den Rechnungen steht, was nach dem Abzug noch zu bezahlen ist.
 - Die Karte **Stunden** zeigt ihm seine Zeiteinträge mit Datum, Beschreibung, Stunden und Betrag, getrennt in verrechnet und nicht verrechnet. Einträge auf einem Rechnungsentwurf gelten für ihn als nicht verrechnet, bis du die Rechnung versendest. Die Beschreibungen erscheinen so, wie du sie erfasst hast – interne Notizen also nicht hineinschreiben.
 - Auf dem Computer bleibt der Kopf mit dem Kundennamen beim Scrollen oben stehen. Darunter kleben der Titel der Karte, die du gerade liest, und ihr Tabellenkopf – auch im Kunden-Dashboard.
+- Die Karte **Offerten** zeigt dem Kunden seine versendeten, angenommenen und abgelehnten Offerten mit PDF. Solange eine Offerte gültig ist (bis und mit «gültig bis»), kann er sie mit seinem Namen **annehmen** (mit Bestätigung) oder **ablehnen** (optional mit Grund). Danach steht dort «angenommen am … von …». Abgelaufene Offerten lassen sich nicht mehr beantworten. Ob die Seite Sie oder Du sagt, legst du pro Kunde fest.
 - Wer den Link hat, sieht die Seite; Suchmaschinen nehmen sie nicht auf. **Neuer Link** macht den alten ungültig, **Deaktivieren** schaltet die Seite ab. „aktiv“ im Menü zeigt, dass ein Link besteht.
 
 ### Websites überwachen
@@ -132,6 +135,7 @@ Hat ein Kunde zu viel bezahlt, musst du nichts zurücküberweisen: Der Betrag wi
 - Das PDF hat keinen Einzahlungsschein. **Senden** verschickt es per E-Mail.
 - Markiere Offerten als **angenommen** oder **abgelehnt**. Abgelaufene, noch offene Offerten sind in der Liste markiert.
 - **In Rechnung umwandeln** erstellt einen Rechnungsentwurf mit denselben Positionen und öffnet ihn.
+- Antwortet ein Kunde im **Kundenlink**, bekommst du eine Mail, und in der Liste steht unter dem Status «am … von … (Kundenlink)», bei einer Ablehnung mit Grund. Für im Kundenlink angenommene Offerten ohne Rechnung erscheint im Dashboard das Todo **In Rechnung umwandeln**.
 
 
 ## Ausgaben und Jahresabschluss
@@ -142,6 +146,7 @@ Hat ein Kunde zu viel bezahlt, musst du nichts zurücküberweisen: Der Betrag wi
 - **Duplikat-Prüfung:** Gibt es schon eine Ausgabe mit derselben Belegnummer, derselben Beleg-Datei oder demselben Datum und Betrag, erscheint ein Hinweis mit den Treffern. Ist es keine doppelte Ausgabe, speicherst du mit **Trotzdem speichern**.
 - **Euro und Dollar:** Wähle die Währung und gib den Originalbetrag ein. Der Betrag in Franken wird zum Tageskurs der Europäischen Zentralbank vorgeschlagen (am Wochenende der Kurs des letzten Werktags). Weicht deine Abrechnung ab, überschreibst du ihn; **Kurs übernehmen** stellt den Vorschlag wieder her. Im Jahresabschluss zählt der Betrag in Franken.
 - Der Beleg wird privat gespeichert und öffnet sich über **Öffnen** in der Liste. Belege müssen 10 Jahre aufbewahrt werden.
+- **Belege per Mail:** Leite Rechnungen von Anbietern an deine Empfangsadresse weiter (einrichten siehe Einstellungen → Belege per Mail). Die App liest die Anhänge (PDF, JPG, PNG, WEBP) aus und zeigt sie oben als **Neue Belege per Mail**. **Prüfen** öffnet den Dialog «Neue Ausgabe» vorausgefüllt; beim Speichern verschwindet der Beleg aus dem Eingang. **Verwerfen** löscht ihn samt Datei. Erst gespeicherte Ausgaben zählen im Abschluss, ein Todo erinnert an offene Belege. Angenommen werden nur Mails von deiner Absender-Adresse und den dort eingetragenen weiteren Absendern. Hat eine Mail keinen verwertbaren Anhang (zum Beispiel nur ein HEIC-Foto), erscheint sie mit einem Hinweis im Eingang; dann den Beleg als PDF oder JPG nochmals senden oder direkt erfassen und den Eintrag verwerfen.
 - **Fehlende Belege?** Kommt eine Ausgabe regelmässig (monatlich oder jährlich, mit gleichem Lieferanten und gleicher Beschreibung), meldet die Seite, wenn der nächste Beleg fehlt. **Erfassen** öffnet den Dialog mit Datum, Lieferant, Beschreibung, Kategorie und letztem Betrag; **✕** blendet einen Hinweis aus, etwa wenn etwas gekündigt ist – auch in den Todos auf dem Dashboard und in der Wochenmail, auf allen Geräten. Erfasst du später wieder einen Beleg dieser Ausgabe, meldet sich der Hinweis beim nächsten Ausbleiben erneut.
 - Erfasse nur geschäftlich begründete Kosten.
 - Filter nach Jahr und Kategorie; bearbeiten und löschen über das „…“-Menü.

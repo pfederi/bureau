@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
+import { antwortDatum } from '@/lib/portal/quotes'
 import { FilePlus2 } from 'lucide-react'
 import StickyHeader from '../StickyHeader'
 
@@ -86,6 +87,12 @@ export default async function OffertenPage(
                         <span className="text-sm tabular-nums">{formatChf(Number(q.betrag))}</span>
                         <Badge variant={badge[q.status].variant} className={badge[q.status].className}>{quoteStatusLabel[q.status]}</Badge>
                       </span>
+                      {q.antwort_via === 'kundenlink' && q.antwort_am && (
+                        <span className="mt-1 block text-xs text-muted-foreground sm:hidden">
+                          am {antwortDatum(q.antwort_am)} von {q.antwort_name} (Kundenlink)
+                          {q.antwort_grund && <span className="block whitespace-pre-line wrap-anywhere">Grund: {q.antwort_grund}</span>}
+                        </span>
+                      )}
                     </TableCell>
                     <TableCell className="hidden whitespace-nowrap md:table-cell">{q.customer?.firma_oder_name}</TableCell>
                     <TableCell className="hidden tabular-nums md:table-cell">{formatDatum(q.offertdatum)}</TableCell>
@@ -99,6 +106,12 @@ export default async function OffertenPage(
                         {quoteStatusLabel[q.status]}
                       </Badge>
                       {q.invoice_id && <Badge variant="outline" className="ml-1.5 text-muted-foreground">Verrechnet</Badge>}
+                      {q.antwort_via === 'kundenlink' && q.antwort_am && (
+                        <span className="mt-1 block text-xs text-muted-foreground">
+                          am {antwortDatum(q.antwort_am)} von {q.antwort_name} (Kundenlink)
+                          {q.antwort_grund && <span className="block whitespace-pre-line wrap-anywhere">Grund: {q.antwort_grund}</span>}
+                        </span>
+                      )}
                     </TableCell>
                     <TableCell className="text-right">
                       <QuoteActions id={q.id} offertnummer={q.offertnummer} status={q.status} invoiceId={q.invoice_id} email={q.customer?.email ?? null} />

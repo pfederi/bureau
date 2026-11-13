@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
   if (!cronAuthorized(req.headers.get('authorization'))) return NextResponse.json({ error: 'Nicht berechtigt.' }, { status: 401 })
 
   const db = createAdminSupabase()
-  const [inv, quo, te, ex, cu, cr, se, si] = await Promise.all([
+  const [inv, quo, te, ex, cu, cr, se, si, be] = await Promise.all([
     db.from('invoices').select('*, customer:customers(*)'),
     db.from('quotes').select('*, customer:customers(*)'),
     db.from('time_entries').select('*, customer:customers(firma_oder_name)'),
@@ -34,6 +34,8 @@ export async function GET(req: NextRequest) {
     listCreditsFor(db).then(data => ({ data, error: null }), (error: Error) => ({ data: null, error })),
     db.from('settings').select('*').eq('id', 1).single(),
     db.from('monitored_sites').select('*'),
+    // Belege per Mail im Eingang (nur Anzahl; vor Migration 0023 ein Fehler → 0)
+    db.from('beleg_eingang').select('id', { count: 'exact', head: true }),
   ])
   const fehler = [inv, quo, te, ex, cu, cr, se, si].find(r => r.error)?.error
   if (fehler || !se.data) return NextResponse.json({ error: fehler?.message ?? 'Einstellungen fehlen.' }, { status: 500 })
@@ -48,7 +50,7 @@ export async function GET(req: NextRequest) {
     datum: formatDatum(now.toISOString().slice(0, 10)),
     jahr,
     todos: computeTodos({
-      invoices, quotes: quo.data as any[], timeEntries: te.data as any[], customers: cu.data as any[], sites: si.data as any[],
+      invoices, quotes: quo.data as any[], timeEntries: te.data as any[], customers: cu.data as any[], sites: si.data as any[], belegEingang: be.error ? 0 : be.count ?? 0,
       fehlendeBelege: findMissingRecurring(ex.data as any[], now, se.data.belege_ausgeblendet ?? []), now,
     }),
     offen: openInvoiceRows(invoices, coveredAmounts(invoices, cr.data as any[]), now),

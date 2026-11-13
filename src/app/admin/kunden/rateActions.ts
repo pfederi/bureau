@@ -18,15 +18,18 @@ export async function setProjectRateAction(customerId: string, projekt: string, 
   await requireSession()
   const parsed = ansatzSchema.safeParse(formData.get('stundensatz'))
   if (!parsed.success || !projekt.trim()) return { ok: false, error: 'Bitte einen Ansatz grösser als 0 eingeben oder das Feld leeren.' }
+  let alt: number
   try {
-    const alt = await aktuellerAnsatz(customerId, projekt)
+    alt = await aktuellerAnsatz(customerId, projekt)
     if (parsed.data === null) await deleteProjectRate(customerId, projekt)
     else await setProjectRate(customerId, projekt, parsed.data)
     neuLaden(customerId)
-    return { ok: true, frage: (await offeneFrage(customerId, projekt, alt)) ?? undefined }
   } catch {
     return { ok: false, error: 'Ansatz konnte nicht gespeichert werden.' }
   }
+  // Gespeichert ist gespeichert: scheitert nur die Rückfrage, gibt es eben keine
+  const frage = await offeneFrage(customerId, projekt, alt).catch(() => null)
+  return { ok: true, frage: frage ?? undefined }
 }
 
 /** Offene Einträge mit dem alten Ansatz auf den aktuellen setzen. Der Server bestimmt Einträge und neuen Satz selbst. */

@@ -85,7 +85,8 @@ try {
 const OEFFENTLICH = [
   // Pfad-Präfix → nötige Prüfung statt requireSession
   ['src/app/api/cron/', /cronAuthorized\(/, 'cronAuthorized()'],
-  ['src/app/kunde/', /getPortal(Invoice|Customer)\(|loadPortal\(/, 'Kundenlink-Token'],
+  ['src/app/kunde/', /getPortal(Invoice|Customer|Quote)\(|loadPortal\(/, 'Kundenlink-Token'],
+  ['src/app/api/inbound/', /verifyWebhook\(/, 'Webhook-Signatur'],
 ]
 const HANDLER = /^(GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS)$/
 for (const f of dateien('src/app', p => p.endsWith('/route.ts'))) {

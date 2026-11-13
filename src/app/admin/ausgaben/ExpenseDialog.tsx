@@ -18,15 +18,20 @@ import { addExpenseAction, updateExpenseAction, checkDuplicatesAction } from './
 
 const ACCEPT = 'application/pdf,image/jpeg,image/png,image/webp,image/heic'
 
+/** Beleg aus dem Eingang (per Mail): wird beim Speichern dort entfernt */
+type Eingang = { id: string; path: string; name: string }
+
 // Wird bei jedem Öffnen neu gemountet, damit die Vorbelegung frisch ist.
-function ExpenseFields({ expense, vorlage, today, onDone }: { expense?: Expense; vorlage?: Partial<Expense>; today: string; onDone: () => void }) {
+function ExpenseFields({ expense, vorlage, eingang, today, onDone }: {
+  expense?: Expense; vorlage?: Partial<Expense>; eingang?: Eingang; today: string; onDone: () => void
+}) {
   // Neue Ausgabe aus einer Vorlage (z. B. wiederkehrender Beleg): nur Startwerte, keine ID
   const start = expense ?? vorlage
   const router = useRouter()
   const fileRef = useRef<HTMLInputElement>(null)
   const [kategorie, setKategorie] = useState<ExpenseCategory>(start?.kategorie ?? 'software')
   const [beleg, setBeleg] = useState<{ path: string; name: string } | null>(
-    expense?.beleg_path ? { path: expense.beleg_path, name: expense.beleg_name ?? 'Beleg' } : null,
+    expense?.beleg_path ? { path: expense.beleg_path, name: expense.beleg_name ?? 'Beleg' } : eingang ? { path: eingang.path, name: eingang.name } : null,
   )
   const [uploading, setUploading] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -34,8 +39,8 @@ function ExpenseFields({ expense, vorlage, today, onDone }: { expense?: Expense;
   // Fremdwährung: Franken-Betrag zum EZB-Kurs vorschlagen, bis er von Hand geändert wird
   const [datum, setDatum] = useState(start?.datum ?? today)
   const [waehrung, setWaehrung] = useState<Currency>(start?.waehrung ?? 'CHF')
-  const [original, setOriginal] = useState(start?.betrag_original != null ? String(start.betrag_original) : '')
-  const [chf, setChf] = useState(start?.betrag != null ? String(start.betrag) : '')
+  const [original, setOriginal] = useState(start?.betrag_original != null ? Number(start.betrag_original).toFixed(2) : '')
+  const [chf, setChf] = useState(start?.betrag != null ? Number(start.betrag).toFixed(2) : '')
   const [chfManuell, setChfManuell] = useState(!!expense && expense.waehrung !== 'CHF')
   const [kurs, setKurs] = useState<ChfRate | null>(null)
   const [kursFehler, setKursFehler] = useState('')
@@ -136,6 +141,7 @@ function ExpenseFields({ expense, vorlage, today, onDone }: { expense?: Expense;
       <input type="hidden" name="beleg_path" value={beleg?.path ?? ''} />
       <input type="hidden" name="beleg_name" value={beleg?.name ?? ''} />
       <input type="hidden" name="waehrung" value={waehrung} />
+      {eingang && <input type="hidden" name="eingang_id" value={eingang.id} />}
       <div className="space-y-1.5 md:col-span-2">
         <span className="block py-[5px] text-sm font-medium leading-none">Beleg</span>
         <input ref={fileRef} type="file" accept={ACCEPT} className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) upload(f) }} />
@@ -223,8 +229,8 @@ function ExpenseFields({ expense, vorlage, today, onDone }: { expense?: Expense;
 }
 
 /** Dialog zum Erfassen oder Bearbeiten einer Ausgabe. */
-export function ExpenseDialog({ open, onOpenChange, expense, vorlage, today }: {
-  open: boolean; onOpenChange: (open: boolean) => void; expense?: Expense; vorlage?: Partial<Expense>; today: string
+export function ExpenseDialog({ open, onOpenChange, expense, vorlage, eingang, today }: {
+  open: boolean; onOpenChange: (open: boolean) => void; expense?: Expense; vorlage?: Partial<Expense>; eingang?: Eingang; today: string
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -233,7 +239,7 @@ export function ExpenseDialog({ open, onOpenChange, expense, vorlage, today }: {
           <DialogTitle>{expense ? 'Ausgabe bearbeiten' : 'Neue Ausgabe'}</DialogTitle>
           <DialogDescription>Geschäftlich begründete Kosten mit Beleg erfassen.</DialogDescription>
         </DialogHeader>
-        <ExpenseFields expense={expense} vorlage={vorlage} today={today} onDone={() => onOpenChange(false)} />
+        <ExpenseFields expense={expense} vorlage={vorlage} eingang={eingang} today={today} onDone={() => onOpenChange(false)} />
       </DialogContent>
     </Dialog>
   )

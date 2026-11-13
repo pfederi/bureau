@@ -15,6 +15,10 @@ export const settingsSchema = z.object({
   mwst_hinweis: z.string(),
   naechste_nummer: z.coerce.number().int().positive(),
   grenzsteuersatz: z.coerce.number().min(0).max(60),
+  beleg_absender: z.preprocess(
+    v => (typeof v === 'string' ? v.split(/[\s,;]+/).map(x => x.trim().toLowerCase()).filter(Boolean) : v),
+    z.array(z.string().email()).max(20),
+  ),
 })
 
 export function parseSettingsForm(fd: FormData): Partial<Settings> {

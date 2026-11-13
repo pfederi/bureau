@@ -12,7 +12,7 @@ const settings: Settings = {
 const customer: Customer = {
   id: 'c', kundennummer: 42, firma_oder_name: 'Muster AG', adresse: 'Beispielstrasse 5',
   plz: '3000', ort: 'Bern', land: 'Schweiz', email: 'x@example.ch', ansprechperson: null, gruss: 'Freundliche Grüsse',
-  hosting_text: null, hosting_preis_monat: null, hosting_ab: null, hosting_bis: null, stunden_budget: null, budget_zeitraum: null, stundensatz: null,
+  hosting_text: null, hosting_preis_monat: null, hosting_ab: null, hosting_bis: null, stunden_budget: null, budget_zeitraum: null, stundensatz: null, anrede: 'sie',
 }
 const invoice: Invoice = {
   id: 'i', rechnungsnummer: 'RE-2025-JAN-15-0007', customer_id: 'c', typ: 'pauschal',
@@ -62,7 +62,7 @@ describe('renderQuotePdf', () => {
     const quote = {
       id: 'q', offertnummer: 'OF-2026-OCT-21-42-0001', customer_id: 'c', status: 'entwurf' as const,
       offertdatum: '2026-10-21', gueltig_bis: '2026-11-30', betrag: 63.16, rabatt_prozent: 0,
-      notiz: 'Umsetzung innert vier Wochen nach Auftrag.', mwst_hinweis: settings.mwst_hinweis, sent_at: null, invoice_id: null,
+      notiz: 'Umsetzung innert vier Wochen nach Auftrag.', mwst_hinweis: settings.mwst_hinweis, sent_at: null, invoice_id: null, antwort_am: null, antwort_name: null, antwort_grund: null, antwort_via: null,
     }
     const offerte = await renderQuotePdf({ quote, items, customer, settings })
     const rechnung = await renderInvoicePdf({ invoice, items, customer, settings })

@@ -28,7 +28,7 @@ export function OffeneAnpassenDialog({ frage, onClose }: { frage: OffeneFrage | 
   }
 
   return (
-    <AlertDialog open={frage !== null} onOpenChange={o => { if (!o) onClose() }}>
+    <AlertDialog open={frage !== null} onOpenChange={o => { if (!o && !busy) onClose() }}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Offene Einträge anpassen?</AlertDialogTitle>
@@ -40,7 +40,7 @@ export function OffeneAnpassenDialog({ frage, onClose }: { frage: OffeneFrage | 
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Nur für neue Einträge</AlertDialogCancel>
+          <AlertDialogCancel disabled={busy}>Nur für neue Einträge</AlertDialogCancel>
           <AlertDialogAction disabled={busy} onClick={e => { e.preventDefault(); void anpassen() }}>Anpassen</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

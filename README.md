@@ -7,9 +7,9 @@ Rechnungen, Stunden und Ausgaben für Selbständige in der Schweiz – selbst ge
 ## Funktionen
 
 - **Rechnen:** Rechnungen mit QR-Zahlteil (PDF), Offerten, Zahlungserinnerungen, Storno, Überzahlungen als Kundenguthaben, Hosting-Sammelrechnungen
-- **Erfassen:** Zeiterfassung mit Projekten und Stundenbudget, Ausgaben mit Belegen und automatischer Belegerkennung
-- **Überblick:** Dashboard mit Todos, offenen Beträgen, Steuer-Rücklage, Jahresabschluss und Steuerpaket als ZIP
-- **Kunden:** Kundenportal mit Rechnungen und Stundenrapporten, Website-Überwachung mit Alarm
+- **Erfassen:** Zeiterfassung mit Projekten, Stundenbudget und Stundensatz pro Kunde und Projekt; Ausgaben mit Belegen, automatischer Belegerkennung und Belegen per Mail
+- **Überblick:** Dashboard mit Todos, offenen Beträgen, Steuer-Rücklage, Kundenauswertung (Umsatz, effektiver Stundensatz, Zahlungsdauer), Jahresabschluss und Steuerpaket als ZIP
+- **Kunden:** Kundenportal mit Rechnungen, Stunden und Offerten zum Annehmen oder Ablehnen, Anrede Sie oder Du pro Kunde, Website-Überwachung mit Alarm
 - **Automatisch:** Wochenübersicht per Mail jeden Montag
 - **Sicher:** Pflicht-Zwei-Faktor (Authenticator oder Passkey), Row Level Security, automatische Abmeldung, Datensicherung als ZIP
 
@@ -21,7 +21,11 @@ Alle Bilder zeigen erfundene Beispieldaten.
 |---|---|
 | ![Rechnungsliste mit Status Entwurf, Versendet und Bezahlt](docs/images/rechnungen.png) | ![Zeiterfassung mit Einträgen nach Kunde und Projekt](docs/images/zeiterfassung.png) |
 | **Kunde** | **Kundenportal** |
-| ![Kunden-Detailseite mit Verdienst, Stundenbudget und Projekten](docs/images/kunde.png) | ![Kundenportal mit offenen und bezahlten Rechnungen und Stundenbudget](docs/images/kundenportal.png) |
+| ![Kunden-Detailseite mit Verdienst, Stundenbudget, offenen Zeiteinträgen und Projekten mit Stundensatz](docs/images/kunde.png) | ![Kundenportal mit offenem Betrag, Offerten zum Annehmen oder Ablehnen und Rechnungen](docs/images/kundenportal.png) |
+
+**Auswertung pro Kunde**
+
+![Kundenauswertung mit Umsatz, Anteil, offenem Betrag, Stunden, effektivem Stundensatz und Zahlungsdauer](docs/images/auswertung.png)
 
 **Rechnung als PDF mit QR-Zahlteil**
 

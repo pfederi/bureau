@@ -15,6 +15,8 @@ export type Settings = {
   grenzsteuersatz?: number
   /** Ausgeblendete Hinweise auf fehlende Belege (`hideId` aus expenses/recurring) */
   belege_ausgeblendet?: string[]
+  /** Weitere erlaubte Absender für Belege per Mail (die Absender-Adresse ist immer erlaubt) */
+  beleg_absender?: string[]
 }
 
 export type Customer = {
@@ -39,6 +41,8 @@ export type Customer = {
   budget_zeitraum: 'monat' | 'jahr' | null
   /** Ansatz pro Stunde, null = Standard aus den Einstellungen */
   stundensatz: number | null
+  /** Anrede im Kundenlink */
+  anrede: 'sie' | 'du'
   /** Kundenlink (private Seite unter /kunde/…), null = keiner */
   portal_token?: string | null
   portal_erstellt_am?: string | null
@@ -140,6 +144,11 @@ export type Quote = {
   sent_at: string | null
   /** Daraus erstellte Rechnung */
   invoice_id: string | null
+  /** Antwort des Kunden im Kundenlink */
+  antwort_am: string | null
+  antwort_name: string | null
+  antwort_grund: string | null
+  antwort_via: 'kundenlink' | null
 }
 
 export type ExpenseCategory =

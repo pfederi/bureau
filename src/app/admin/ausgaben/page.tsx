@@ -9,6 +9,8 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { NewExpenseButton } from './ExpenseDialog'
+import BelegEingangCard from './BelegEingangCard'
+import { listBelegEingang } from '@/lib/db/belegEingang'
 import ExpenseActions from './ExpenseActions'
 import ExpenseFilterBar from './ExpenseFilterBar'
 import RecurringHints from './RecurringHints'
@@ -22,10 +24,11 @@ export default async function AusgabenPage(props: { searchParams: Promise<{ jahr
   const searchParams = await props.searchParams
   const jahr = searchParams.jahr || String(new Date().getFullYear())
   const kategorie = EXPENSE_CATEGORIES.find(c => c.value === searchParams.kategorie)?.value as ExpenseCategory | undefined
-  const [expenses, alle, settings] = await Promise.all([
+  const [expenses, alle, settings, eingang] = await Promise.all([
     listExpenses({ jahr: jahr === 'alle' ? undefined : jahr, kategorie }),
     listExpenses(),
     getSettings().catch(() => null),
+    listBelegEingang().catch(() => []),
   ])
   const fehlend = findMissingRecurring(alle, new Date(), settings?.belege_ausgeblendet ?? [])
   const total = expenses.reduce((s, e) => s + Number(e.betrag), 0)
@@ -49,6 +52,7 @@ export default async function AusgabenPage(props: { searchParams: Promise<{ jahr
         </div>
         <ExpenseFilterBar jahr={jahr} kategorie={kategorie ?? ''} />
       </StickyHeader>
+      <BelegEingangCard eintraege={eingang} today={today} />
       <RecurringHints hints={fehlend} today={today} />
       <Card>
         <CardContent className="pt-4 sm:pt-6">

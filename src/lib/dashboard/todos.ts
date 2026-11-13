@@ -13,7 +13,7 @@ import { formatDatum } from '@/lib/utils'
  * Dringend (zuerst): überfällige Rechnungen, abgelaufene Offerten.
  */
 
-export type TodoArt = 'erinnern' | 'offerte' | 'entwurf' | 'stunden' | 'beleg' | 'hosting' | 'budget' | 'website'
+export type TodoArt = 'erinnern' | 'offerte' | 'angenommen' | 'entwurf' | 'stunden' | 'beleg' | 'hosting' | 'budget' | 'website'
 
 export type Todo = {
   key: string
@@ -33,7 +33,8 @@ type Kunde = { customer?: { firma_oder_name: string; email?: string | null } | n
 type TodoInvoice = Pick<Invoice, 'id' | 'rechnungsnummer' | 'status' | 'rechnungsdatum' | 'betrag' | 'sent_at' | 'erinnert_am' | 'verrechnung_material' | 'customer_id'> & Partial<Pick<Invoice, 'hosting_jahr'>> & Kunde
 type TodoCustomer = Pick<Customer, 'id' | 'firma_oder_name' | 'hosting_text' | 'hosting_preis_monat' | 'hosting_ab' | 'hosting_bis'>
   & Partial<Pick<Customer, 'stunden_budget' | 'budget_zeitraum'>>
-type TodoQuote = Pick<Quote, 'id' | 'offertnummer' | 'status' | 'offertdatum' | 'gueltig_bis' | 'betrag' | 'customer_id'> & Kunde
+type TodoQuote = Pick<Quote, 'id' | 'offertnummer' | 'status' | 'offertdatum' | 'gueltig_bis' | 'betrag' | 'customer_id'>
+  & Partial<Pick<Quote, 'invoice_id' | 'antwort_am' | 'antwort_via'>> & Kunde
 type TodoEntry = Pick<TimeEntry, 'customer_id' | 'datum' | 'stunden' | 'stundensatz' | 'billed'> & Kunde
 
 /** Erst nach so vielen Tagen erneut an dieselbe Rechnung erinnern */
@@ -55,6 +56,8 @@ export function computeTodos(input: {
   customers?: TodoCustomer[]
   /** Überwachte Websites (Ausfall, SSL, Domain) */
   sites?: MonitoredSite[]
+  /** Anzahl Belege im Eingang (per Mail) */
+  belegEingang?: number
   now: Date
 }): Todo[] {
   const { now } = input
@@ -96,6 +99,22 @@ export function computeTodos(input: {
       href: '/admin/offerten?status=versendet&jahr=alle',
       dringend: bis > 0,
       tage: bis,
+      betrag: Number(q.betrag),
+    })
+  }
+
+  // Im Kundenlink angenommene Offerten, aus denen noch keine Rechnung entstanden ist
+  // (von Hand angenommene nicht: die sind oft schon anders verrechnet und blieben sonst für immer stehen)
+  for (const q of input.quotes) {
+    if (q.status !== 'angenommen' || q.invoice_id || q.antwort_via !== 'kundenlink') continue
+    todos.push({
+      key: `angenommen-${q.id}`,
+      art: 'angenommen',
+      titel: `${q.offertnummer} angenommen · ${kunde(q)}`,
+      detail: 'In Rechnung umwandeln',
+      href: `/admin/offerten?status=angenommen&jahr=alle&kunde=${q.customer_id}`,
+      dringend: false,
+      tage: tageSeit(q.antwort_am ?? q.offertdatum, now),
       betrag: Number(q.betrag),
     })
   }
@@ -148,6 +167,14 @@ export function computeTodos(input: {
     todos.push({
       key: `beleg-${m.key}`, art: 'beleg', titel: `Beleg fehlt: ${m.beschreibung}`,
       detail: `${m.frequenz === 'monatlich' ? 'monatlich' : 'jährlich'}, erwartet seit ${alt} Tagen`, href: '/admin/ausgaben', dringend: false, tage: alt,
+    })
+  }
+
+  if ((input.belegEingang ?? 0) > 0) {
+    const n = input.belegEingang as number
+    todos.push({
+      key: 'beleg-eingang', art: 'beleg', titel: `${n} ${n === 1 ? 'Beleg' : 'Belege'} per Mail zu prüfen`,
+      detail: 'im Eingang auf der Seite Ausgaben', href: '/admin/ausgaben', dringend: false, tage: 0,
     })
   }
 

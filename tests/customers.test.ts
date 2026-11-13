@@ -21,6 +21,15 @@ describe('parseCustomerForm', () => {
     fd.set('stundensatz', '0')
     expect(() => parseCustomerForm(fd)).toThrow()
   })
+  it('liest die Anrede, Standard Sie', () => {
+    const fd = new FormData()
+    fd.set('firma_oder_name', 'Muster AG')
+    expect(parseCustomerForm(fd).anrede).toBe('sie')
+    fd.set('anrede', 'du')
+    expect(parseCustomerForm(fd).anrede).toBe('du')
+    fd.set('anrede', 'ihr')
+    expect(() => parseCustomerForm(fd)).toThrow()
+  })
   it('throws when name missing', () => {
     expect(() => parseCustomerForm(new FormData())).toThrow()
   })

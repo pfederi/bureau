@@ -6,15 +6,30 @@ import { findDuplicates, type DuplicateCandidate } from '@/lib/expenses/duplicat
 import { formatChf } from '@/lib/invoices/stats'
 import { getSettings, updateSettings } from '@/lib/db/settings'
 import { formatDatum } from '@/lib/utils'
+import { deleteBelegEingang, getBelegEingang } from '@/lib/db/belegEingang'
+import { eingangDateiLoeschen } from '@/lib/inbound/belege'
 
 type Result = { ok: boolean; error?: string }
 
 export async function addExpenseAction(formData: FormData): Promise<Result> {
   await requireSession()
+  let input
   try {
-    await createExpense(parseExpenseForm(formData))
+    input = parseExpenseForm(formData)
+    await createExpense(input)
   } catch {
     return { ok: false, error: 'Ausgabe konnte nicht gespeichert werden. Bitte Eingaben prüfen.' }
+  }
+  // Aus dem Eingang übernommen: Eintrag entfernen (die Ausgabe ist gespeichert, ein Fehler hier wird nur geloggt,
+  // sonst würde ein erneuter Versuch sie doppelt anlegen). Die Datei bleibt, wenn sie jetzt der Beleg der Ausgabe ist.
+  const eingangId = formData.get('eingang_id')
+  if (typeof eingangId === 'string' && /^[0-9a-f-]{36}$/i.test(eingangId)) {
+    try {
+      const eintrag = await getBelegEingang(eingangId)
+      if (eintrag) await deleteBelegEingang(eingangId, eingangDateiLoeschen(eintrag.beleg_path, input.beleg_path))
+    } catch (e) {
+      console.error('[belege per mail] Eingang nach dem Speichern nicht aufgeräumt', e)
+    }
   }
   revalidatePath('/admin', 'layout')
   return { ok: true }
@@ -59,6 +74,17 @@ export async function hideRecurringAction(ids: string[]): Promise<Result> {
     if (neu.length) await updateSettings({ belege_ausgeblendet: [...bisher, ...neu] })
   } catch {
     return { ok: false, error: 'Hinweis konnte nicht ausgeblendet werden.' }
+  }
+  revalidatePath('/admin', 'layout')
+  return { ok: true }
+}
+
+export async function discardBelegEingangAction(id: string): Promise<Result> {
+  await requireSession()
+  try {
+    await deleteBelegEingang(id, true)
+  } catch {
+    return { ok: false, error: 'Beleg konnte nicht verworfen werden.' }
   }
   revalidatePath('/admin', 'layout')
   return { ok: true }
