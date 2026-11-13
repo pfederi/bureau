@@ -23,7 +23,7 @@ import { listSites } from '@/lib/db/sites'
 import SitesCard from './SitesCard'
 import { defaultReportMonth, reportMonths } from '@/lib/timeEntries/report'
 import { hoursOverview } from '@/lib/timeEntries/hoursOverview'
-import HoursCard from '../../../HoursCard'
+import HoursCard, { OpenHoursCard } from '../../../HoursCard'
 import GuthabenCard from '../../../GuthabenCard'
 import GuthabenDialog, { GuthabenAufsKonto, GuthabenLoeschen } from './GuthabenDialog'
 import { listGuthaben } from '@/lib/db/guthaben'
@@ -132,6 +132,8 @@ export default async function KontoPage(props: { params: Promise<{ id: string }>
         </Card>
       )}
 
+      <OpenHoursCard gruppe={stunden.offen} link={`/admin/zeiterfassung?kunde=${customer.id}&status=offen`} />
+
       <Card>
         <CardContent className="pt-4 sm:pt-6">
           <div className="karte-titel -mt-3 mb-1 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 py-3">
@@ -207,6 +209,7 @@ export default async function KontoPage(props: { params: Promise<{ id: string }>
 
       <HoursCard
         {...stunden}
+        ohneOffen
         rechnungLink={r => (
           <InvoicePreviewButton id={r.id} rechnungsnummer={r.rechnungsnummer} className="wrap-anywhere">{r.rechnungsnummer}</InvoicePreviewButton>
         )}

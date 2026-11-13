@@ -69,7 +69,8 @@ Der Admin-Bereich verwaltet deine Kunden, Zeiten, Offerten, Rechnungen und Ausga
 - **Guthaben** aus Überzahlungen erfasst du mit **Überzahlung erfassen** in der Karte Rechnungen; die Karte **Guthaben** zeigt Guthaben und Anrechnungen (siehe „Überzahlung und Guthaben“).
 - Die Rechnungsliste zeigt auch **Entwürfe** (Badge „Entwurf“). Zum offenen Betrag zählen sie erst, wenn du sie versendest; im Kundenlink erscheinen sie ebenfalls erst dann.
 - **Projekte** zeigt pro Projekt die Stunden, den verrechneten Betrag nach Rabatt und den effektiven Ansatz pro Stunde.
-- **Stunden** (zugeklappt, ein Klick öffnet sie) listet alle Zeiteinträge des Kunden, getrennt in **Nicht verrechnet** und **Verrechnet**, je mit Stunden und Betrag (Stunden × Ansatz). Bei verrechneten Einträgen steht die Rechnungsnummer, ein Klick öffnet die PDF-Vorschau; Einträge auf einem Entwurf sind mit „(Entwurf)“ markiert.
+- **Offene Zeiteinträge** steht direkt unter dem Stundenbudget und listet alle noch nicht verrechneten Einträge mit Stunden und Betrag (Stunden × Ansatz), oben die Summe. **In der Zeiterfassung →** öffnet sie dort zum Bearbeiten. Ohne offene Einträge fehlt die Karte.
+- **Verrechnete Stunden** (zugeklappt, ein Klick öffnet sie) listet die verrechneten Einträge mit Rechnungsnummer; ein Klick darauf öffnet die PDF-Vorschau. Einträge auf einem Entwurf sind mit „(Entwurf)“ markiert. Auf der Kundenseite sieht der Kunde weiterhin eine Karte **Stunden** mit offenen und verrechneten Einträgen.
 - Von dort aus erstellst du direkt eine **Offerte** oder **Rechnung**, der Kunde ist schon ausgewählt. Über das **„…“-Menü** daneben bearbeitest oder löschst du den Kunden.
 - Ein Klick auf eine **Rechnungsnummer** öffnet die PDF-Vorschau mit „In neuem Tab“ und „Herunterladen“.
 
