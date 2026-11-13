@@ -1,3 +1,4 @@
+import { Zeile } from '../Bewegung'
 import { Paperclip, FileBarChart } from 'lucide-react'
 import { listExpenses } from '@/lib/db/expenses'
 import { EXPENSE_CATEGORIES, categoryLabel } from '@/lib/expenses/categories'
@@ -69,7 +70,7 @@ export default async function AusgabenPage(props: { searchParams: Promise<{ jahr
             </TableHeader>
             <TableBody>
               {expenses.map(e => (
-                <TableRow key={e.id}>
+                <Zeile key={e.id} id={e.id}>
                   <TableCell className="hidden tabular-nums md:table-cell">{formatDatum(e.datum)}</TableCell>
                   <TableCell>
                     <span className="block">{e.beschreibung}</span>
@@ -95,7 +96,7 @@ export default async function AusgabenPage(props: { searchParams: Promise<{ jahr
                     )}
                   </TableCell>
                   <TableCell className="text-right"><ExpenseActions expense={e} today={today} /></TableCell>
-                </TableRow>
+                </Zeile>
               ))}
               {expenses.length === 0 && (
                 <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">Keine Ausgaben für diesen Filter.</TableCell></TableRow>

@@ -1,4 +1,5 @@
 'use client'
+import { markiereGespeichert } from '../Bewegung'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
@@ -38,6 +39,7 @@ export default function TimeEntryActions({ entry, customers }: { entry: TimeEntr
       return
     }
     toast.success('Eintrag aktualisiert')
+    markiereGespeichert(entry.id)
     setEditOpen(false)
     router.refresh()
   }

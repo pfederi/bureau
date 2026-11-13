@@ -51,10 +51,12 @@ export async function getExpense(id: string): Promise<Expense | null> {
   return data as Expense | null
 }
 
-export async function createExpense(input: ExpenseInput): Promise<void> {
+/** Legt die Ausgabe an und gibt ihre ID zurück (null, falls sie nicht zurückgelesen werden kann – gespeichert ist sie trotzdem). */
+export async function createExpense(input: ExpenseInput): Promise<string | null> {
   const supabase = await createServerSupabase()
-  const { error } = await supabase.from('expenses').insert(input)
+  const { data, error } = await supabase.from('expenses').insert(input).select('id')
   if (error) throw error
+  return (data?.[0]?.id as string | undefined) ?? null
 }
 
 /** Ersetzter Beleg wird im Speicher gelöscht. */

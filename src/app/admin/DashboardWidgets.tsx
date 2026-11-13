@@ -1,3 +1,4 @@
+import { Zahl } from './Bewegung'
 import type { ReactNode } from 'react'
 import { formatChf, formatBetrag, formatZahl, formatStunden, type MonthlyRevenue } from '@/lib/invoices/stats'
 import { cn } from '@/lib/utils'
@@ -22,7 +23,7 @@ export function ChfValue({ amount }: { amount: number }) {
   return (
     <>
       <span className="mr-1 text-sm font-medium text-muted-foreground sm:mr-1.5 sm:text-base">Fr.</span>
-      {formatBetrag(amount)}
+      <Zahl wert={amount} />
     </>
   )
 }

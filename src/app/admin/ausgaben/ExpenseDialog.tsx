@@ -1,4 +1,5 @@
 'use client'
+import { markiereGespeichert } from '../Bewegung'
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
@@ -128,10 +129,11 @@ function ExpenseFields({ expense, vorlage, eingang, today, onDone }: {
 
   async function save(formData: FormData) {
     setBusy(true)
-    const r = expense ? await updateExpenseAction(expense.id, formData) : await addExpenseAction(formData)
+    const r: { ok: boolean; error?: string; id?: string } = expense ? await updateExpenseAction(expense.id, formData) : await addExpenseAction(formData)
     setBusy(false)
     if (!r.ok) { toast.error(r.error ?? 'Speichern fehlgeschlagen.'); return }
     toast.success(expense ? 'Ausgabe aktualisiert' : 'Ausgabe erfasst')
+    markiereGespeichert(expense ? expense.id : r.id)
     onDone()
     router.refresh()
   }

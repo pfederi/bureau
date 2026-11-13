@@ -13,6 +13,8 @@ import { formatChf } from '@/lib/invoices/stats'
 import { formatDatum } from '@/lib/utils'
 import { antwortDatum, offerteZustand, type PortalQuote } from '@/lib/portal/quotes'
 import { portalText, type Anrede } from '@/lib/portal/text'
+import { Aufploppen } from '@/app/admin/Bewegung'
+import { HAEKCHEN } from '@/app/admin/useBestaetigung'
 
 type Offen = { quote: PortalQuote; art: 'annehmen' | 'ablehnen' }
 
@@ -65,7 +67,9 @@ export default function PortalQuotesCard({ token, anrede, heute, quotes }: { tok
     <Card>
       <CardContent className="pt-4 sm:pt-6">
         <h2 className="karte-titel -mt-3 py-3 text-sm font-medium">Offerten</h2>
-        <p ref={statusRef} role="status" tabIndex={-1} className={danke ? 'mb-3 rounded-md border border-green-500/40 px-3 py-2 text-sm text-green-400 outline-hidden focus-visible:ring-2 focus-visible:ring-ring' : 'sr-only'}>{danke}</p>
+        <p ref={statusRef} role="status" tabIndex={-1} className={danke ? 'mb-3 flex items-center gap-2 rounded-md border border-green-500/40 px-3 py-2 text-sm text-green-400 outline-hidden focus-visible:ring-2 focus-visible:ring-ring' : 'sr-only'}>
+          {danke && <Check key={danke} className={`h-4 w-4 shrink-0 ${HAEKCHEN}`} aria-hidden />}{danke}
+        </p>
         <ul className="divide-y">
           {sichtbar.map(q => {
             const zustand = offerteZustand(q, heute)
@@ -79,17 +83,20 @@ export default function PortalQuotesCard({ token, anrede, heute, quotes }: { tok
                     {formatDatum(q.offertdatum)} · {formatChf(Number(q.betrag))}
                     {zustand === 'offen' && (q.gueltig_bis ? ` · gültig bis ${formatDatum(q.gueltig_bis)}` : ' · offen')}
                   </div>
-                  {zustand === 'abgelaufen' && (
-                    <p className="text-xs text-amber-400">Abgelaufen am {formatDatum(q.gueltig_bis)}. {t.neueOfferte}</p>
-                  )}
-                  {(zustand === 'angenommen' || zustand === 'abgelehnt') && (
-                    <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                      <Badge variant="outline" className={zustand === 'angenommen' ? 'border-green-500 text-green-400' : 'text-muted-foreground'}>
-                        {zustand === 'angenommen' ? 'Angenommen' : 'Abgelehnt'}
-                      </Badge>
-                      {q.antwort_am && q.antwort_name && <span>am {antwortDatum(q.antwort_am)} von {q.antwort_name}</span>}
-                    </div>
-                  )}
+                  {/* Immer vorhanden, damit der Wechsel von «offen» zu «angenommen» aufploppt */}
+                  <Aufploppen wert={zustand ?? ''} als="div" className="origin-left space-y-1">
+                    {zustand === 'abgelaufen' && (
+                      <p className="text-xs text-amber-400">Abgelaufen am {formatDatum(q.gueltig_bis)}. {t.neueOfferte}</p>
+                    )}
+                    {(zustand === 'angenommen' || zustand === 'abgelehnt') && (
+                      <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                        <Badge variant="outline" className={zustand === 'angenommen' ? 'border-green-500 text-green-400' : 'text-muted-foreground'}>
+                          {zustand === 'angenommen' ? 'Angenommen' : 'Abgelehnt'}
+                        </Badge>
+                        {q.antwort_am && q.antwort_name && <span>am {antwortDatum(q.antwort_am)} von {q.antwort_name}</span>}
+                      </div>
+                    )}
+                  </Aufploppen>
                 </div>
                 {zustand === 'offen' && (
                   <div className="flex gap-2">

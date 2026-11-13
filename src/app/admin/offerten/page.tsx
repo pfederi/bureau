@@ -1,3 +1,4 @@
+import { Aufploppen, Zeile } from '../Bewegung'
 import { listQuotes } from '@/lib/db/quotes'
 import { listCustomers } from '@/lib/db/customers'
 import { formatChf } from '@/lib/invoices/stats'
@@ -73,7 +74,7 @@ export default async function OffertenPage(
               {quotes.map(q => {
                 const abgelaufen = q.status === 'versendet' && q.gueltig_bis !== null && q.gueltig_bis < today
                 return (
-                  <TableRow key={q.id}>
+                  <Zeile key={q.id} id={q.id}>
                     <TableCell>
                       <span className="block whitespace-nowrap font-medium">{q.offertnummer}</span>
                       {/* Handy: Kunde, Datum und Gültigkeit als zweite Zeile */}
@@ -85,7 +86,7 @@ export default async function OffertenPage(
                       )}
                       <span className="mt-1 flex items-center gap-2 sm:hidden">
                         <span className="text-sm tabular-nums">{formatChf(Number(q.betrag))}</span>
-                        <Badge variant={badge[q.status].variant} className={badge[q.status].className}>{quoteStatusLabel[q.status]}</Badge>
+                        <Aufploppen wert={q.status}><Badge variant={badge[q.status].variant} className={badge[q.status].className}>{quoteStatusLabel[q.status]}</Badge></Aufploppen>
                       </span>
                       {q.antwort_via === 'kundenlink' && q.antwort_am && (
                         <span className="mt-1 block text-xs text-muted-foreground sm:hidden">
@@ -101,10 +102,12 @@ export default async function OffertenPage(
                     </TableCell>
                     <TableCell className="hidden whitespace-nowrap text-right tabular-nums sm:table-cell">{formatChf(Number(q.betrag), { tabelle: true })}</TableCell>
                     <TableCell className="hidden sm:table-cell">
+                      <Aufploppen wert={q.status}>
                       <Badge variant={badge[q.status].variant} className={badge[q.status].className}>
                         <span className="mr-1.5 inline-block h-1.5 w-1.5 rounded-full bg-current" />
                         {quoteStatusLabel[q.status]}
                       </Badge>
+                      </Aufploppen>
                       {q.invoice_id && <Badge variant="outline" className="ml-1.5 text-muted-foreground">Verrechnet</Badge>}
                       {q.antwort_via === 'kundenlink' && q.antwort_am && (
                         <span className="mt-1 block text-xs text-muted-foreground">
@@ -116,7 +119,7 @@ export default async function OffertenPage(
                     <TableCell className="text-right">
                       <QuoteActions id={q.id} offertnummer={q.offertnummer} status={q.status} invoiceId={q.invoice_id} email={q.customer?.email ?? null} />
                     </TableCell>
-                  </TableRow>
+                  </Zeile>
                 )
               })}
               {quotes.length === 0 && (

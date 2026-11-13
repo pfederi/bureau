@@ -1,4 +1,5 @@
 'use client'
+import { markiereGespeichert } from '../Bewegung'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
@@ -45,6 +46,7 @@ function TimeEntryFields({ customers, ansaetze, satzFest, initial, onDone }: {
       return
     }
     toast.success('Eintrag gespeichert')
+    markiereGespeichert(r.id)
     if (r.hinweis) toast.error(r.hinweis)
     onDone()
     router.refresh()

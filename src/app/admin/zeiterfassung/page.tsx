@@ -1,3 +1,4 @@
+import { Zeile } from '../Bewegung'
 import { listTimeEntries, listProjectNames, type TimeEntryStatusFilter } from '@/lib/db/timeEntries'
 import { listCustomers } from '@/lib/db/customers'
 import { getSettings } from '@/lib/db/settings'
@@ -67,7 +68,7 @@ export default async function ZeiterfassungPage(
             </TableHeader>
             <TableBody>
               {entries.map(e => (
-                <TableRow key={e.id}>
+                <Zeile key={e.id} id={e.id}>
                   <TableCell className="hidden tabular-nums md:table-cell">{formatDatum(e.datum)}</TableCell>
                   <TableCell className="hidden whitespace-nowrap md:table-cell">{e.customer?.firma_oder_name}</TableCell>
                   <TableCell>
@@ -88,7 +89,7 @@ export default async function ZeiterfassungPage(
                       {e.billed ? <span className="w-9" aria-hidden /> : <TimeEntryActions entry={e} customers={customers} />}
                     </div>
                   </TableCell>
-                </TableRow>
+                </Zeile>
               ))}
               {entries.length === 0 && (
                 <TableRow>

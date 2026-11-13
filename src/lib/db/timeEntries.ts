@@ -58,10 +58,12 @@ export async function openEntriesForCustomer(customerId: string): Promise<TimeEn
   return data as TimeEntry[]
 }
 
-export async function createTimeEntry(input: TimeEntryInput): Promise<void> {
+/** Legt den Eintrag an und gibt seine ID zurück (null, falls sie nicht zurückgelesen werden kann – gespeichert ist er trotzdem). */
+export async function createTimeEntry(input: TimeEntryInput): Promise<string | null> {
   const supabase = await createServerSupabase()
-  const { error } = await supabase.from('time_entries').insert({ ...input, billed: false })
+  const { data, error } = await supabase.from('time_entries').insert({ ...input, billed: false }).select('id')
   if (error) throw error
+  return (data?.[0]?.id as string | undefined) ?? null
 }
 
 export async function updateTimeEntry(id: string, input: TimeEntryInput): Promise<void> {

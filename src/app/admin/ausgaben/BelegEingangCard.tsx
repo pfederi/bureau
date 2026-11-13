@@ -14,6 +14,7 @@ import type { BelegEingang } from '@/lib/db/belegEingang'
 import type { Expense } from '@/lib/types'
 import { ExpenseDialog } from './ExpenseDialog'
 import { discardBelegEingangAction } from './actions'
+import { EINBLENDEN, useNeueIds } from '../Bewegung'
 
 function vorlageAus(e: BelegEingang): Partial<Expense> {
   const v = e.vorschlag ?? {}
@@ -32,6 +33,8 @@ export default function BelegEingangCard({ eintraege, today }: { eintraege: Bele
   const [pruefen, setPruefen] = useState<BelegEingang | null>(null)
   const [verwerfen, setVerwerfen] = useState<BelegEingang | null>(null)
   const [busy, setBusy] = useState(false)
+  // Neu per Mail eingetroffene Belege blenden nach dem Neuladen von oben ein
+  const neu = useNeueIds(eintraege.map(e => e.id))
   if (eintraege.length === 0) return null
 
   async function weg(e: BelegEingang) {
@@ -53,7 +56,7 @@ export default function BelegEingangCard({ eintraege, today }: { eintraege: Bele
             const v = e.vorschlag ?? {}
             const name = e.beleg_name ?? e.betreff ?? 'Mail ohne Beleg'
             return (
-              <li key={e.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
+              <li key={e.id} className={`flex flex-wrap items-center justify-between gap-3 py-3 ${neu.has(e.id) ? EINBLENDEN : ''}`}>
                 <div className="min-w-0 space-y-0.5">
                   <div className="font-medium wrap-anywhere">{v.lieferant ?? e.absender}</div>
                   <div className="text-xs tabular-nums text-muted-foreground">

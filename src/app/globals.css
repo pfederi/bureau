@@ -32,6 +32,13 @@
     15% { width: 40%; }
     100% { width: 85%; }
   }
+  /* Status gewechselt (z. B. «Bezahlt»): kurz aufploppen */
+  --animate-pop: pop 250ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  @keyframes pop {
+    0% { transform: scale(0.85); opacity: 0.6; }
+    60% { transform: scale(1.08); opacity: 1; }
+    100% { transform: scale(1); }
+  }
   --animate-donut-zeichnen: donut-zeichnen 900ms cubic-bezier(0.4, 0, 0.2, 1) both;
   @keyframes donut-zeichnen {
     from { stroke-dashoffset: var(--umfang); }
@@ -307,3 +314,10 @@
 html:has(dialog.lightbox[open]) {
   overflow: hidden;
 }
+
+/*
+ * Gleitender Hintergrund des aktiven Menüpunkts (NavLinks): Sobald der Indikator positioniert ist,
+ * übernimmt er den Hintergrund; vorher (Laden) hat der aktive Link ihn selbst. Ausserhalb von @layer,
+ * damit die Regel die Utility-Klasse des Links übersteuert.
+ */
+[data-indikator='an'] [data-nav-haupt][aria-current='page'] { background-color: transparent; }

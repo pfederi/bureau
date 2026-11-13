@@ -1,4 +1,5 @@
 'use client'
+import { markiereGespeichert } from '../Bewegung'
 import { useState } from 'react'
 import { useNavRouter } from '@/app/admin/NavProgress'
 import { toast } from 'sonner'
@@ -33,6 +34,7 @@ export default function QuoteActions({ id, offertnummer, status, invoiceId, emai
       return false
     }
     toast.success(success)
+    markiereGespeichert(id)
     setOpen(false)
     router.refresh()
     return true

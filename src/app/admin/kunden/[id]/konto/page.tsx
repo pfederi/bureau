@@ -1,3 +1,4 @@
+import { Aufploppen } from '../../../Bewegung'
 import { notFound } from 'next/navigation'
 import { ArrowLeft, FilePlus2, FileText } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -176,10 +177,10 @@ export default async function KontoPage(props: { params: Promise<{ id: string }>
                         {i.rechnungsnummer}
                       </InvoicePreviewButton>
                       <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground sm:hidden">
-                        <span className="tabular-nums">{formatDatum(i.rechnungsdatum)}</span>{status}
+                        <span className="tabular-nums">{formatDatum(i.rechnungsdatum)}</span><Aufploppen wert={i.status}>{status}</Aufploppen>
                       </div>
                     </TableCell>
-                    <TableCell className="hidden sm:table-cell">{status}</TableCell>
+                    <TableCell className="hidden sm:table-cell"><Aufploppen wert={i.status}>{status}</Aufploppen></TableCell>
                     <TableCell className="text-right tabular-nums align-top sm:align-middle">
                       {formatBetrag(Number(i.betrag), { tabelle: true })}
                       {angerechnet(i) > 0 && i.status !== 'storniert' && (

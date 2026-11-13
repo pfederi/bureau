@@ -1,4 +1,5 @@
 'use client'
+import { markiereGespeichert } from './Bewegung'
 import { useState } from 'react'
 import { useNavRouter } from '@/app/admin/NavProgress'
 import { toast } from 'sonner'
@@ -58,6 +59,7 @@ export default function InvoiceActions({
     }
     toast.success('Rechnung versendet')
     setOpen(false)
+    markiereGespeichert(id)
     router.refresh()
   }
 
@@ -72,6 +74,7 @@ export default function InvoiceActions({
     }
     toast.success('Zahlungserinnerung versendet')
     setOpen(false)
+    markiereGespeichert(id)
     router.refresh()
   }
 
@@ -89,7 +92,8 @@ export default function InvoiceActions({
       router.push(`/admin/rechnungen/${r.newId}/bearbeiten`)
     } else {
       toast.success('Rechnung storniert')
-      router.refresh()
+      markiereGespeichert(id)
+    router.refresh()
     }
   }
 
@@ -100,7 +104,8 @@ export default function InvoiceActions({
       await setStatusAction(id, next)
       toast.success(`Status geändert zu „${statusLabel[next]}“`)
       setOpen(false)
-      router.refresh()
+      markiereGespeichert(id)
+    router.refresh()
     } catch {
       toast.error('Status konnte nicht geändert werden.')
     } finally {
@@ -117,6 +122,7 @@ export default function InvoiceActions({
       return
     }
     toast.success(next ? 'Wird über das Kundenkonto verrechnet' : 'Wird normal bezahlt')
+    markiereGespeichert(id)
     router.refresh()
   }
 
@@ -134,6 +140,7 @@ export default function InvoiceActions({
     }
     toast.success(`${formatChf(r.betrag ?? 0)} Guthaben angerechnet`)
     setOpen(false)
+    markiereGespeichert(id)
     router.refresh()
   }
 
@@ -147,6 +154,7 @@ export default function InvoiceActions({
     }
     toast.success('Anrechnung entfernt, das Guthaben ist wieder frei')
     setOpen(false)
+    markiereGespeichert(id)
     router.refresh()
   }
 
@@ -160,6 +168,7 @@ export default function InvoiceActions({
     }
     toast.success('Entwurf gelöscht')
     setOpen(false)
+    markiereGespeichert(id)
     router.refresh()
   }
 

@@ -11,12 +11,13 @@ import { eingangDateiLoeschen } from '@/lib/inbound/belege'
 
 type Result = { ok: boolean; error?: string }
 
-export async function addExpenseAction(formData: FormData): Promise<Result> {
+export async function addExpenseAction(formData: FormData): Promise<Result & { id?: string }> {
   await requireSession()
   let input
+  let id: string | null
   try {
     input = parseExpenseForm(formData)
-    await createExpense(input)
+    id = await createExpense(input)
   } catch {
     return { ok: false, error: 'Ausgabe konnte nicht gespeichert werden. Bitte Eingaben prüfen.' }
   }
@@ -32,7 +33,7 @@ export async function addExpenseAction(formData: FormData): Promise<Result> {
     }
   }
   revalidatePath('/admin', 'layout')
-  return { ok: true }
+  return { ok: true, id: id ?? undefined }
 }
 
 export async function updateExpenseAction(id: string, formData: FormData): Promise<Result> {

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
@@ -43,7 +43,7 @@ const FOOTER_ITEMS: Item[] = [
   { href: '/admin/anleitung', label: 'Anleitung', icon: BookOpen },
 ]
 
-function NavItem({ item, onNavigate, collapsed = false }: { item: Item; onNavigate?: () => void; collapsed?: boolean }) {
+function NavItem({ item, onNavigate, collapsed = false, haupt = false }: { item: Item; onNavigate?: () => void; collapsed?: boolean; haupt?: boolean }) {
   const pathname = usePathname()
   const active = item.href === '/admin' ? pathname === '/admin'
     // In einem Kunden-Dashboard ist der Kunde in der Liste markiert, nicht „Kunden“
@@ -54,9 +54,10 @@ function NavItem({ item, onNavigate, collapsed = false }: { item: Item; onNaviga
       href={item.href}
       onClick={onNavigate}
       aria-current={active ? 'page' : undefined}
+      data-nav-haupt={haupt || undefined}
       title={collapsed ? item.label : undefined}
       className={cn(
-        'flex items-center gap-3 rounded-md py-2 text-sm transition-colors',
+        'relative flex items-center gap-3 rounded-md py-2 text-sm transition-colors',
         collapsed ? 'justify-center px-2' : 'px-3',
         // Website-Blau für Hover/Aktiv; inaktiv hell genug für Kontrast auf slate-800.
         active ? 'bg-slate-700 font-medium text-blue-300' : 'text-slate-300 hover:bg-slate-700/60 hover:text-blue-300',
@@ -90,12 +91,12 @@ function CustomersItem({ item, customers, onNavigate, collapsed }: {
   }
 
   // Schmale Leiste: kein Platz für Namen, nur der Link zur Kundenliste
-  if (collapsed || customers.length === 0) return <NavItem item={item} onNavigate={onNavigate} collapsed={collapsed} />
+  if (collapsed || customers.length === 0) return <NavItem item={item} onNavigate={onNavigate} collapsed={collapsed} haupt />
 
   return (
     <>
       <div className="flex items-center gap-0.5">
-        <div className="min-w-0 flex-1"><NavItem item={item} onNavigate={onNavigate} /></div>
+        <div className="min-w-0 flex-1"><NavItem item={item} onNavigate={onNavigate} haupt /></div>
         <button
           type="button"
           onClick={toggle}
@@ -104,10 +105,20 @@ function CustomersItem({ item, customers, onNavigate, collapsed }: {
           aria-label={open ? 'Kundenliste zuklappen' : 'Kundenliste aufklappen'}
           className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-slate-300 transition-colors hover:bg-slate-700/60 hover:text-blue-300 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
         >
-          <ChevronRight className={cn('h-4 w-4 transition-transform', open && 'rotate-90')} aria-hidden />
+          <ChevronRight className={cn('h-4 w-4 motion-safe:transition-transform motion-safe:duration-250', open && 'rotate-90')} aria-hidden />
         </button>
       </div>
-      <ul id="nav-kunden" hidden={!open} className="ml-5 mt-0.5 space-y-0.5 border-l border-slate-700 pl-2">
+      {/* Gleitet über grid-template-rows auf und zu; zugeklappt inert (nicht fokussierbar, nicht vorgelesen) */}
+      <div
+        id="nav-kunden"
+        inert={!open}
+        className={cn(
+          'grid motion-safe:transition-[grid-template-rows] motion-safe:duration-250 motion-safe:ease-[cubic-bezier(0.2,0.8,0.2,1)]',
+          open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]',
+        )}
+      >
+      <div className="min-h-0 overflow-hidden">
+      <ul className="ml-5 mt-0.5 space-y-0.5 border-l border-slate-700 pl-2">
         {customers.map(c => {
           const href = `/admin/kunden/${c.id}/konto`
           const active = pathname.startsWith(`/admin/kunden/${c.id}`)
@@ -129,6 +140,8 @@ function CustomersItem({ item, customers, onNavigate, collapsed }: {
           )
         })}
       </ul>
+      </div>
+      </div>
     </>
   )
 }
@@ -139,8 +152,34 @@ export default function NavLinks({ onNavigate, collapsed = false, customers = []
   collapsed?: boolean
   customers?: NavCustomer[]
 }) {
+  // Gleitender Hintergrund des aktiven Punkts: misst den aktiven Link und folgt ihm beim Seitenwechsel
+  const navRef = useRef<HTMLElement>(null)
+  const pathname = usePathname()
+  const [pos, setPos] = useState<{ top: number; left: number; width: number; height: number } | null>(null)
+  useEffect(() => {
+    const nav = navRef.current
+    if (!nav) return
+    const messen = () => {
+      const el = nav.querySelector<HTMLElement>('[data-nav-haupt][aria-current="page"]')
+      if (!el) { setPos(null); return }
+      const n = nav.getBoundingClientRect()
+      const r = el.getBoundingClientRect()
+      setPos({ top: r.top - n.top, left: r.left - n.left, width: r.width, height: r.height })
+    }
+    messen()
+    if (typeof ResizeObserver === 'undefined') return
+    const ro = new ResizeObserver(messen)
+    ro.observe(nav)
+    return () => ro.disconnect()
+  }, [pathname, collapsed])
+
   return (
-    <nav aria-label="Hauptnavigation" className={collapsed ? 'space-y-3' : 'space-y-5'}>
+    <nav ref={navRef} aria-label="Hauptnavigation" data-indikator={pos ? 'an' : undefined} className={cn('relative', collapsed ? 'space-y-3' : 'space-y-5')}>
+      <span
+        aria-hidden
+        className="pointer-events-none absolute rounded-md bg-slate-700 motion-safe:transition-[top,left,width,height] motion-safe:duration-250 motion-safe:ease-[cubic-bezier(0.2,0.8,0.2,1)]"
+        style={pos ?? { display: 'none' }}
+      />
       {GROUPS.map((g, i) => (
         <div key={i} className={cn(collapsed && i > 0 && 'border-t pt-3')}>
           {g.title && (
@@ -151,7 +190,7 @@ export default function NavLinks({ onNavigate, collapsed = false, customers = []
               <li key={item.href}>
                 {item.href === '/admin/kunden'
                   ? <CustomersItem item={item} customers={customers} onNavigate={onNavigate} collapsed={collapsed} />
-                  : <NavItem item={item} onNavigate={onNavigate} collapsed={collapsed} />}
+                  : <NavItem item={item} onNavigate={onNavigate} collapsed={collapsed} haupt />}
               </li>
             ))}
           </ul>

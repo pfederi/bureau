@@ -1,3 +1,4 @@
+import { Aufploppen, Zeile } from '../Bewegung'
 import { listInvoices, listHostingBilled } from '@/lib/db/invoices'
 import { listCustomers } from '@/lib/db/customers'
 import { listGuthabenSaldi } from '@/lib/db/guthaben'
@@ -72,14 +73,14 @@ export default async function RechnungenPage(
             </TableHeader>
             <TableBody>
               {invoices.map(inv => (
-                <TableRow key={inv.id}>
+                <Zeile key={inv.id} id={inv.id}>
                   <TableCell>
                     <span className="block whitespace-nowrap font-medium">{inv.rechnungsnummer}</span>
                     {/* Handy: Kunde und Datum als zweite Zeile statt eigener Spalten */}
                     <span className="block text-xs text-muted-foreground md:hidden">{inv.customer?.firma_oder_name} · {formatDatum(inv.rechnungsdatum)}</span>
                     <span className="mt-1 flex items-center gap-2 sm:hidden">
                       <span className="text-sm tabular-nums">{formatChf(Number(inv.betrag))}</span>
-                      <Badge variant={badgeVariant[inv.status]} className={badgeExtra[inv.status]}>{label[inv.status]}</Badge>
+                      <Aufploppen wert={inv.status}><Badge variant={badgeVariant[inv.status]} className={badgeExtra[inv.status]}>{label[inv.status]}</Badge></Aufploppen>
                     </span>
                   </TableCell>
                   <TableCell className="hidden whitespace-nowrap md:table-cell">{inv.customer?.firma_oder_name}</TableCell>
@@ -91,10 +92,10 @@ export default async function RechnungenPage(
                     )}
                   </TableCell>
                   <TableCell className="hidden sm:table-cell">
-                    <Badge variant={badgeVariant[inv.status]} className={badgeExtra[inv.status]}>
+                    <Aufploppen wert={inv.status}><Badge variant={badgeVariant[inv.status]} className={badgeExtra[inv.status]}>
                       <span className="mr-1.5 inline-block h-1.5 w-1.5 rounded-full bg-current" />
                       {label[inv.status]}
-                    </Badge>
+                    </Badge></Aufploppen>
                     {inv.status === 'versendet' && inv.erinnert_am && (
                       <span className="ml-1.5 text-xs text-muted-foreground" title="Zuletzt erinnert">erinnert {formatDatum(inv.erinnert_am)}</span>
                     )}
@@ -103,7 +104,7 @@ export default async function RechnungenPage(
                     )}
                   </TableCell>
                   <TableCell className="text-right"><InvoiceActions id={inv.id} rechnungsnummer={inv.rechnungsnummer} status={inv.status} customerId={inv.customer_id} verrechnung={inv.verrechnung_material} erinnertAm={inv.erinnert_am} email={inv.customer?.email ?? null} betrag={Number(inv.betrag)} guthabenAngerechnet={angerechnet(inv)} guthabenVerfuegbar={guthaben[inv.customer_id] ?? 0} /></TableCell>
-                </TableRow>
+                </Zeile>
               ))}
               {invoices.length === 0 && (
                 <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">Keine Rechnungen für diesen Filter.</TableCell></TableRow>
