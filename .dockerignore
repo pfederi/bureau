@@ -1,0 +1,17 @@
+# Nicht in den Docker-Build kopieren (spart Zeit und Speicher beim Bauen)
+.git
+.github
+Dockerfile.coolify
+.next
+node_modules
+out
+.superpowers
+.claude
+tests
+coverage
+docs/superpowers
+scripts/public
+*.log
+.env*
+!.env.example
+.DS_Store

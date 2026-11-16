@@ -106,7 +106,7 @@ Hinweise:
 
 ### Docker
 
-Im Repo liegt ein `Dockerfile`. Die App lauscht auf Port 3000. Beim Bauen brauchst du die Build-Args `NEXT_PUBLIC_SUPABASE_URL` und `NEXT_PUBLIC_SUPABASE_ANON_KEY`; die übrigen Variablen setzt du als Umgebungsvariablen des laufenden Containers.
+Im Repo liegt ein mehrstufiges `Dockerfile`: Es baut die App und erzeugt ein schlankes Laufzeit-Image (Next.js «standalone», rund 370 MB). Die App lauscht auf Port 3000. Der Build braucht 2–3 GB Arbeitsspeicher; auf einem knappen Server besser anderswo bauen (z. B. GitHub Actions) und nur das fertige Image starten. Beim Bauen brauchst du die Build-Args `NEXT_PUBLIC_SUPABASE_URL` und `NEXT_PUBLIC_SUPABASE_ANON_KEY`; die übrigen Variablen setzt du als Umgebungsvariablen des laufenden Containers.
 
 ```bash
 docker build \

@@ -52,7 +52,7 @@ Next.js 16, React 19, Tailwind 4, shadcn/ui, Supabase (Postgres, Auth, Storage).
 | Dienst | Wofür | |
 |---|---|---|
 | Supabase | Datenbank, Anmeldung, Belege | Pflicht |
-| Resend | Mailversand | optional |
+| Resend | Mailversand, Belege per Mail empfangen | optional |
 | Groq | Belegerkennung | optional |
 
 Ohne Resend lassen sich Rechnungen als PDF herunterladen und selbst versenden; die Cron-Jobs (Wochenmail, Website-Überwachung) laufen weiter, verschicken aber keine Mail. Ohne Groq erfasst du Ausgaben von Hand.
@@ -64,7 +64,7 @@ npm run dev     # Entwicklungsserver
 npm run check   # Typen, Tests, npm audit, Login-Schutz, Migrationen, Geheimnisse
 ```
 
-Konventionen für Mitarbeit (auch mit KI-Assistenten) stehen in [CLAUDE.md](CLAUDE.md).
+Wie die App aufgebaut ist (Bausteine, Abläufe, Sicherheit, Entscheidungen), beschreibt [docs/architektur.md](docs/architektur.md) nach arc42. Konventionen für Mitarbeit (auch mit KI-Assistenten) stehen in [CLAUDE.md](CLAUDE.md).
 
 ## Fehler, Ideen und Sicherheit
 

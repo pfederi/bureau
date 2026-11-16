@@ -12,6 +12,12 @@ const securityHeaders = [
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   poweredByHeader: false,
+  // Schlankes Laufzeit-Image (Dockerfile): nur der Server mit den nötigen Paketen
+  output: 'standalone',
+  // Zur Laufzeit von der Festplatte gelesen, für das Tracing nicht sichtbar: Schriften der PDF-Erzeugung
+  outputFileTracingIncludes: {
+    '/**/*': ['./node_modules/pdfkit/js/data/**/*'],
+  },
   // Projektordner fest: sonst nimmt Turbopack eine package-lock.json weiter oben als Wurzel
   turbopack: { root: __dirname },
   images: {
